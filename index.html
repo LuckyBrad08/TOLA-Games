@@ -86,6 +86,14 @@ h1 {
 .pill:hover { transform: translateY(-3px); }
 .pill .emoji { font-size: 26px; }
 .badge { background: var(--sun); border-radius: 999px; padding: 0 10px; font-size: 18px; }
+.pill.five { background: var(--sun); box-shadow: 0 6px 0 #d9a520; }
+/* "Next game" during Pip's 5 minutes: floats over the game's reward screen */
+.next-btn { position: fixed; z-index: 6; top: max(14px, env(safe-area-inset-top, 0px)); right: max(16px, env(safe-area-inset-right, 0px));
+  border: 0; border-radius: 999px; padding: 12px 22px; background: var(--sun); box-shadow: 0 6px 0 #d9a520, 0 10px 20px rgba(34, 48, 74, .2);
+  font-family: var(--font-display); font-weight: 800; font-size: 22px; display: inline-flex; align-items: center; gap: 10px; animation: nudge 1.4s ease-in-out infinite; }
+@keyframes nudge { 50% { transform: translateY(-4px) scale(1.04); } }
+.rec-block { margin-top: 10px; padding: 10px 14px; border-radius: 14px; background: #f5f9fb; }
+.rec-label { font-weight: 700; min-width: 92px; }
 .grownup { touch-action: none; position: relative; overflow: hidden; border: 2px solid rgba(255,255,255,.8); border-radius: 999px; padding: 8px 16px; background: rgba(255,255,255,.25); color: var(--paper); font-size: 15px; font-weight: 700; }
 .grownup .fill { position: absolute; inset: 0; background: rgba(255,255,255,.5); transform: scaleX(0); transform-origin: left; }
 .grownup.holding .fill { transform: scaleX(1); transition: transform 1.5s linear; }
@@ -150,6 +158,7 @@ h1 {
   .door-skills { display: none; }
   .pill { padding: 8px 16px; font-size: 18px; }
   .round-btn { width: 48px; height: 48px; font-size: 22px; }
+  .next-btn { font-size: 17px; padding: 8px 16px; top: max(8px, env(safe-area-inset-top, 0px)); }
   .book { padding: 14px; gap: 10px; grid-template-columns: repeat(auto-fill, minmax(72px, 1fr)); }
   .slotb { font-size: 42px; border-radius: 18px; }
 }
@@ -189,6 +198,7 @@ h1 {
       </button>
     </div>
     <div class="hub-foot">
+      <button class="pill five" id="fiveBtn"><span class="emoji">🌟</span> Pip's 5 minutes</button>
       <button class="pill" id="hubBook"><span class="emoji">⭐</span> Stickers <span class="badge" id="hubStickerCount">0</span></button>
       <button class="grownup" id="grownBtn" title="Press and hold to open settings and progress"><span class="fill"></span><span>Grown-ups: press and hold</span></button>
     </div>
@@ -209,6 +219,7 @@ h1 {
 <div class="game-host" id="host-honey" hidden></div>
 <div class="game-host" id="host-reading" hidden></div>
 <div class="game-host" id="host-trace" hidden></div>
+<button class="next-btn" id="nextBtn" hidden></button>
 
 <div class="sheet-wrap" id="sheetWrap" hidden>
   <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="sheetTitle">
@@ -224,6 +235,12 @@ h1 {
     <div class="field"><label for="firstName" style="padding:0"><span>First name</span></label><input type="text" id="firstName" autocomplete="off" spellcheck="false"></div>
     <div class="field"><label for="lastName" style="padding:0"><span>Surname</span></label><input type="text" id="lastName" autocomplete="off" spellcheck="false"></div>
     <p>Write it with capitals the way it should look. Honey Keys teaches her to type it; Reading Nest asks her to find it among other names.</p>
+    <div class="rec-block">
+      <b>Her name in your voice</b>
+      <div class="row" id="recFirst"></div>
+      <div class="row" id="recLast"></div>
+      <p id="recNote">Computer voices often get names wrong. Record her name once and Pip plays your recording whenever it says it. Say just the name, close to the microphone.</p>
+    </div>
     <div class="field"><label for="myWords" style="padding:0"><span>My words: one per line (family, pets, friends)</span></label><textarea id="myWords" spellcheck="false" placeholder="Mom&#10;Dad&#10;Gogo"></textarea></div>
 
     <h4>Pip's voice</h4>
@@ -924,6 +941,27 @@ h2 { font-family: var(--font-display); font-weight: 800; font-size: clamp(30px, 
 .key.pressed { transform: translateY(6px); box-shadow: 0 2px 0 #b7c6d3, inset 0 0 0 3px #e6eef5; background: #e9f6ff; }
 .key.hint { background: var(--wheat); animation: glow 1s ease-in-out infinite; }
 
+/* Plan the path: Undo and Go sit in the two empty corners of the arrow pad; the plan is a row of arrow cards */
+.key.undo { grid-column: 1; grid-row: 1; }
+.key.go { grid-column: 3; grid-row: 1; background: #d3f3dc; }
+.key.go svg path { fill: var(--ok); }
+.side { display: flex; flex-direction: column; align-items: center; gap: 12px; flex: none; }
+.plan { display: flex; flex-wrap: wrap; align-content: flex-start; gap: 6px; width: calc(3 * clamp(76px, 8vw, 104px) + 20px); min-height: 58px;
+  padding: 8px; border-radius: 16px; background: rgba(255, 255, 255, .78); border: 3px dashed rgba(34, 48, 74, .22); }
+.plan:empty::before { content: "Your plan goes here"; color: var(--ink-soft); font-family: var(--font-display); font-weight: 800; font-size: 16px; padding: 6px 4px; }
+.card { width: 42px; height: 42px; border-radius: 10px; background: var(--paper); box-shadow: 0 3px 0 #b7c6d3; display: grid; place-items: center; transition: transform .15s, background .15s; }
+.card svg { width: 26px; height: 26px; }
+.card svg path { fill: var(--ink); }
+.card.new { animation: pop .25s ease; }
+.card.now { background: var(--wheat); transform: translateY(-4px); }
+.card.done { opacity: .45; }
+.card.bad { background: #ffd6d6; box-shadow: 0 3px 0 #e07a7a; animation: wiggle .45s ease; }
+.modes { display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; margin-top: 1vh; }
+.mode { border: 0; border-radius: 999px; padding: 10px 20px; background: rgba(255, 255, 255, .7); box-shadow: 0 5px 0 rgba(34, 48, 74, .12);
+  font-family: var(--font-display); font-weight: 800; font-size: 20px; display: inline-flex; align-items: center; gap: 8px; }
+.mode .emoji { font-size: 24px; }
+.mode.sel { background: var(--wheat); box-shadow: 0 5px 0 #d9a520, 0 0 0 4px var(--paper); }
+
 /* Reward + book */
 .eyebrow { font-family: var(--font-display); font-weight: 800; letter-spacing: .12em; text-transform: uppercase; font-size: 18px; margin: 0; color: var(--ink-soft); }
 .sticker-big {
@@ -1042,6 +1080,14 @@ h2 { font-family: var(--font-display); font-weight: 800; font-size: clamp(30px, 
   .pick .emoji { font-size: 50px; }
   .pick span:last-child { font-size: 16px; }
   .how { margin-top: 4px; padding: 8px 16px; font-size: 18px; }
+  .side { gap: 6px; }
+  .plan { width: calc(3 * 68px + 16px); min-height: 44px; padding: 5px; gap: 4px; border-width: 2px; border-radius: 12px; }
+  .plan:empty::before { font-size: 13px; padding: 4px; }
+  .card { width: 32px; height: 32px; border-radius: 8px; }
+  .card svg { width: 20px; height: 20px; }
+  .modes { margin-top: 2px; gap: 8px; }
+  .mode { padding: 6px 14px; font-size: 16px; box-shadow: 0 4px 0 rgba(34, 48, 74, .12); }
+  .mode .emoji { font-size: 20px; }
 }
 </style>
 
@@ -1058,6 +1104,10 @@ h2 { font-family: var(--font-display); font-weight: 800; font-size: clamp(30px, 
       </div>
     </div>
     <div class="pickers" id="pickers"></div>
+    <div class="modes" id="modes">
+      <button class="mode" data-mode="hop" tabindex="-1"><span class="emoji">🐾</span> Hop around</button>
+      <button class="mode" data-mode="plan" tabindex="-1"><span class="emoji">🧩</span> Plan the path</button>
+    </div>
     <div class="how">
       <div><span class="kbd">←</span><span class="kbd">→</span> choose</div>
       <div><span class="kbd space">space</span> play</div>
@@ -1081,11 +1131,16 @@ h2 { font-family: var(--font-display); font-weight: 800; font-size: clamp(30px, 
     </div>
     <div class="field-row">
       <div class="board" id="board" style="--n:5"></div>
+      <div class="side">
+      <div class="plan" id="plan" hidden aria-label="Your plan"></div>
       <div class="pad" id="pad">
         <button class="key up" data-key="ArrowUp" tabindex="-1" aria-label="Up"><svg viewBox="0 0 24 24"><path d="M12 3 22 15h-6v6H8v-6H2z"/></svg><span>Up</span></button>
         <button class="key left" data-key="ArrowLeft" tabindex="-1" aria-label="Left"><svg viewBox="0 0 24 24"><path d="M3 12 15 2v6h6v8h-6v6z"/></svg><span>Left</span></button>
         <button class="key down" data-key="ArrowDown" tabindex="-1" aria-label="Down"><svg viewBox="0 0 24 24"><path d="M12 21 2 9h6V3h8v6h6z"/></svg><span>Down</span></button>
         <button class="key right" data-key="ArrowRight" tabindex="-1" aria-label="Right"><svg viewBox="0 0 24 24"><path d="M21 12 9 22v-6H3V8h6V2z"/></svg><span>Right</span></button>
+        <button class="key undo" data-act="undo" tabindex="-1" aria-label="Undo" hidden><svg viewBox="0 0 24 24"><path d="M10 4 3 10.5 10 17v-4h4a4 4 0 0 1 0 8h-2v3h2a7 7 0 0 0 0-14h-4z"/></svg><span>Undo</span></button>
+        <button class="key go" data-act="go" tabindex="-1" aria-label="Go" hidden><svg viewBox="0 0 24 24"><path d="M6 3v18l15-9z"/></svg><span>Go!</span></button>
+      </div>
       </div>
     </div>
   </section>
@@ -1196,7 +1251,7 @@ h2 { font-family: var(--font-display); font-weight: 800; font-size: clamp(30px, 
 .home-head { display: flex; align-items: center; gap: 18px; margin-top: 2vh; }
 .home-head .pip { width: 104px; height: 104px; font-size: 66px; }
 .home-sub { font-family: var(--font-display); font-weight: 600; font-size: 22px; margin: 6px 0 0; }
-.tiles { display: grid; grid-template-columns: repeat(4, minmax(0, 210px)); gap: 22px; justify-content: center; width: 100%; margin-top: 3vh; }
+.tiles { display: grid; grid-template-columns: repeat(auto-fit, 196px); gap: 22px; justify-content: center; width: 100%; margin-top: 3vh; }
 .tile { border: 0; border-radius: 34px; padding: 18px 12px 14px; background: var(--paper);
   box-shadow: 0 10px 0 var(--edge), 0 14px 24px rgba(42,42,74,.14);
   display: flex; flex-direction: column; align-items: center; gap: 10px; min-height: 220px; transition: transform .15s; }
@@ -1205,6 +1260,9 @@ h2 { font-family: var(--font-display); font-weight: 800; font-size: clamp(30px, 
 .tile-name { font-family: var(--font-display); font-weight: 800; font-size: 25px; line-height: 1; }
 .t-hunt { --wash: #fff0c4; --edge: #f0c24a; }
 .t-words { --wash: #e2f4e7; --edge: #8ccf9f; }
+.t-spell { --wash: #ffe8d6; --edge: #f0a35e; }
+.art-spell { display: grid; justify-items: center; gap: 4px; font-family: var(--font-read); font-weight: 700; font-size: 30px; letter-spacing: .08em; }
+.art-spell .emoji { font-size: 42px; letter-spacing: 0; }
 .t-name { --wash: #ffe0e8; --edge: #ef8fa3; }
 .t-mine { --wash: #e4e8ff; --edge: #9aa6ea; }
 .art-keys { display: flex; gap: 6px; }
@@ -1380,6 +1438,10 @@ h2 { font-family: var(--font-display); font-weight: 800; font-size: clamp(30px, 
   .art-word { font-size: 26px; }
   .art-word .emoji { font-size: 36px; }
   .art-name { font-size: 22px; }
+  .tiles { grid-template-columns: repeat(auto-fit, 136px); gap: 10px; }
+  .art-spell { font-size: 22px; }
+  .art-spell .emoji { font-size: 30px; }
+  .art-name span { font-size: 14px !important; line-height: 1.25; } /* the "Ask a grown-up" message */
 }
 </style>
 
@@ -1397,6 +1459,10 @@ h2 { font-family: var(--font-display); font-weight: 800; font-size: clamp(30px, 
       <button class="tile t-hunt" data-act="hunt" aria-label="Letter hunt">
         <div class="tile-art"><div class="art-keys"><span>A</span><span class="lit">S</span><span>D</span></div></div>
         <span class="tile-name">Letter hunt</span>
+      </button>
+      <button class="tile t-spell" data-act="spell" aria-label="Spell it">
+        <div class="tile-art art-spell"><span class="emoji">👂</span>c_t</div>
+        <span class="tile-name">Spell it</span>
       </button>
       <button class="tile t-words" data-act="words" aria-label="Animal words">
         <div class="tile-art art-word"><span class="emoji">🐱</span>cat</div>
@@ -2107,9 +2173,57 @@ h2 { font-family: var(--font-display); font-weight: 800; font-size: clamp(30px, 
     voice = (settings.voiceName && vs.find(v => v.name === settings.voiceName)) || vs[0] || null;
   }
   if (synth) { chooseVoice(); synth.addEventListener("voiceschanged", chooseVoice); }
+  /* ---------- Her name, in your voice ----------
+     A grown-up can record her first name and surname. When a line Pip says mentions them,
+     that part plays the recording instead of the computer voice. */
+  const nameAudio = shared.get("nameAudio", {});
+  const saveNameAudio = () => shared.set("nameAudio", nameAudio);
+  let clip = null;
+  function playClip(url) {
+    return new Promise(res => {
+      try {
+        clip = new Audio(url);
+        const done = () => { clearTimeout(guard); res(); };
+        const guard = setTimeout(done, 5000);
+        clip.onended = done; clip.onerror = done;
+        clip.play().catch(done);
+      } catch (e) { res(); }
+    });
+  }
+  const escRe = s => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  function nameParts(text) {
+    const names = [["first", settings.first], ["last", settings.last]].map(([k, n]) => [k, (n || "").trim()]).filter(([k, n]) => n && nameAudio[k]);
+    if (!names.length) return null;
+    const re = new RegExp(`(?<!\\p{L})(${names.map(([, n]) => escRe(n)).join("|")})(?!\\p{L})`, "giu");
+    const parts = [];
+    let last = 0, m;
+    while ((m = re.exec(text))) {
+      if (m.index > last) parts.push({ text: text.slice(last, m.index) });
+      const k = names.find(([, n]) => n.toLowerCase() === m[1].toLowerCase())[0];
+      parts.push({ clip: nameAudio[k] });
+      last = m.index + m[1].length;
+    }
+    if (!parts.length) return null;
+    if (last < text.length) parts.push({ text: text.slice(last) });
+    return parts;
+  }
+
   let speechToken = 0;
-  function stopSpeech() { speechToken++; if (synth) synth.cancel(); }
+  function stopSpeech() { speechToken++; if (synth) synth.cancel(); if (clip) { clip.pause(); clip = null; } }
   function speakOne(text, onstart) {
+    const parts = settings.voice ? nameParts(text) : null;
+    return parts ? speakParts(parts, onstart) : speakText(text, onstart);
+  }
+  async function speakParts(parts, onstart) {
+    const tok = speechToken;
+    onstart && onstart();
+    for (const p of parts) {
+      if (tok !== speechToken) return;
+      if (p.clip) await playClip(p.clip);
+      else if (/[\p{L}\p{N}]/u.test(p.text)) await speakText(p.text);
+    }
+  }
+  function speakText(text, onstart) {
     return new Promise(res => {
       if (!settings.voice || !synth) { onstart && onstart(); setTimeout(res, Math.max(450, text.length * 60)); return; }
       const u = new SpeechSynthesisUtterance(text);
@@ -2223,6 +2337,8 @@ h2 { font-family: var(--font-display); font-weight: 800; font-size: clamp(30px, 
     activeGame: () => active,
     registerProgress(id, groups) { games[id].progress = groups; },
     goHub: () => Pip.showHub(),
+    nameAudio, saveNameAudio, playClip,
+    roundDone: null,
     openGrownups: () => Pip.onGrownups && Pip.onGrownups(),
     onHub: null, onGrownups: null
   };
@@ -2725,6 +2841,7 @@ Pip.defineGame("meadow", (root, host) => {
   }
 
   function finishRound() {
+    if (Pip.roundDone) Pip.roundDone(); // lets Pip's 5 minutes know this round is over
     const g = game;
     const before = levels[g.id];
     if (g.good >= 4) levels[g.id] = Math.min(MAX_LEVEL[g.id] || 3, before + 1);
@@ -2805,7 +2922,8 @@ Pip.defineGame("meadow", (root, host) => {
       levels = Object.assign({ count: 1, sums: 1, letters: 1, shapes: 1, patterns: 1 }, store.get("levels", {}));
       goHome();
     },
-    leave() { game = null; stopSpeech(); }
+    leave() { game = null; stopSpeech(); },
+    play(act) { startActivity(act); }
   });
   renderHome();
 });
@@ -2827,9 +2945,10 @@ Pip.defineGame("arrow", (root, host) => {
   /* ---------- Saved settings ---------- */
   const store = Pip.storeFor("arrow");
   const TYPES = ["snack", "numbers", "sounds", "letters"];
-  const settings = Object.assign({ voice: true, sfx: true, sayDir: true, rate: 0.9, animal: 0 }, store.get("settings", {}));
+  const settings = Object.assign({ voice: true, sfx: true, sayDir: true, rate: 0.9, animal: 0, mode: "hop" }, store.get("settings", {}));
   settings.enabled = Object.assign({ snack: true, numbers: true, sounds: true, letters: true }, settings.enabled || {});
   let level = store.get("level", 1);
+  let planLevel = store.get("planLevel", 1); // Plan the path climbs its own levels
   const stickers = Pip.stickers;
   const saveSettings = () => store.set("settings", settings);
 
@@ -2933,7 +3052,13 @@ Pip.defineGame("arrow", (root, host) => {
       `<button class="pick${i === settings.animal ? " sel" : ""}" data-i="${i}" tabindex="-1" aria-label="${a.name}"><span class="emoji">${a.e}</span><span>${a.name}</span></button>`).join("");
     $("#stickerCount").textContent = Object.keys(stickers).length;
     gate.querySelector(".emoji").textContent = ANIMALS[settings.animal].e;
+    root.querySelectorAll(".mode").forEach(b => b.classList.toggle("sel", b.dataset.mode === settings.mode));
   }
+  function setMode(m) {
+    settings.mode = m; saveSettings(); renderStart(); sfx("step");
+    say(m === "plan" ? "Plan the path! Make a plan with the arrows, then press Go." : "Hop around!");
+  }
+  $("#modes").addEventListener("click", e => { const b = e.target.closest(".mode"); if (b) setMode(b.dataset.mode); });
   function choose(i, speak = true) {
     settings.animal = (i + ANIMALS.length) % ANIMALS.length; saveSettings();
     renderStart(); sfx("step");
@@ -2961,13 +3086,13 @@ Pip.defineGame("arrow", (root, host) => {
 
   function startRound() {
     stopSpeech();
-    const types = TYPES.filter(t => settings.enabled[t]);
+    const types = settings.mode === "plan" ? ["plan"] : TYPES.filter(t => settings.enabled[t]);
     let order = [];
     while (order.length < ROUND) order = order.concat(shuffle(types));
     game = { order: order.slice(0, ROUND), i: 0, results: [], hints: 0, startLevel: level, hero: ANIMALS[settings.animal] };
     show("play");
     renderPaws($("#paws"), game.results);
-    say(`Let's go, ${game.hero.name}!`).then(ok => { if (ok !== false && game) nextPuzzle(); });
+    say(settings.mode === "plan" ? `Let's make plans, ${game.hero.name}!` : `Let's go, ${game.hero.name}!`).then(ok => { if (ok !== false && game) nextPuzzle(); });
   }
 
   const key = (x, y) => x + "," + y;
@@ -2986,6 +3111,7 @@ Pip.defineGame("arrow", (root, host) => {
   }
 
   function makePuzzle(type) {
+    if (type === "plan") return makePlanPuzzle();
     const cfg = LEVELS[level], n = cfg.n, hero = game.hero;
     for (let attempt = 0; attempt < 200; attempt++) {
       const player = { x: rand(n), y: rand(n) };
@@ -3021,7 +3147,7 @@ Pip.defineGame("arrow", (root, host) => {
 
   function currentTarget() {
     if (!P) return null;
-    if (P.type === "snack") return P.items.find(i => i.target);
+    if (P.type === "snack" || P.type === "plan") return P.items.find(i => i.target);
     if (P.type === "sounds") return P.goal;
     return P.items.find(i => i.order === P.next);
   }
@@ -3053,6 +3179,7 @@ Pip.defineGame("arrow", (root, host) => {
     const t = P.type, hero = game.hero;
     let html = "";
     if (t === "snack") html = `Help ${hero.name} find the ${hero.f}! <span class="goal emoji">${hero.food}</span>`;
+    else if (t === "plan") html = `Plan the way to the ${hero.f}! <span class="goal emoji">${hero.food}</span>`;
     else if (t === "sounds") html = `Who says “${P.goal.sound}”?`;
     else if (P.next >= P.items.length) html = "You did it!";
     else {
@@ -3064,6 +3191,7 @@ Pip.defineGame("arrow", (root, host) => {
 
   function introText() {
     const hero = game.hero;
+    if (P.type === "plan") return game.i === 0 ? `Plan the path! Tap the arrows to make a plan for ${hero.name}. Then press Go!` : `Make a plan to reach the ${hero.f}.`;
     if (P.type === "snack") return `${hero.name} is hungry! Use the arrows to find the ${hero.f}.`;
     if (P.type === "sounds") return `Who says ${P.goal.sound}? Hop over to that animal!`;
     if (P.type === "numbers") return `Hop on the numbers in order. Start with one!`;
@@ -3080,6 +3208,10 @@ Pip.defineGame("arrow", (root, host) => {
   function nextPuzzle() {
     P = makePuzzle(game.order[game.i]);
     renderBoard(); setPrompt(); clearHint();
+    const planning = P.type === "plan";
+    $("#plan").hidden = !planning;
+    root.querySelectorAll(".key.undo, .key.go").forEach(b => { b.hidden = !planning; });
+    if (planning) renderPlan();
     intro();
   }
 
@@ -3097,6 +3229,7 @@ Pip.defineGame("arrow", (root, host) => {
 
   function move(k) {
     if (!P || P.locked || moving) return;
+    if (P.type === "plan") return addStep(k);
     const d = DIRS[k];
     pressKey(k);
     armIdle();
@@ -3171,23 +3304,153 @@ Pip.defineGame("arrow", (root, host) => {
     if (g.i >= ROUND) finishRound(); else nextPuzzle();
   }
 
+  /* ---------- Plan the path (early coding) ----------
+     She lines up arrow cards first, then presses Go and the animal follows them one by one.
+     If it bumps into something or stops short, it goes back to the start and she fixes the plan. */
+  const PLAN_LEVELS = {
+    1: { n: 5, trees: 0, min: 2, max: 3 },
+    2: { n: 5, trees: 3, min: 3, max: 5 },
+    3: { n: 6, trees: 6, min: 4, max: 7 }
+  };
+  const ARROW_PATH = { ArrowUp: "M12 3 22 15h-6v6H8v-6H2z", ArrowLeft: "M3 12 15 2v6h6v8h-6v6z", ArrowDown: "M12 21 2 9h6V3h8v6h6z", ArrowRight: "M21 12 9 22v-6H3V8h6V2z" };
+  const MAX_PLAN = 12;
+  function makePlanPuzzle() {
+    const cfg = PLAN_LEVELS[planLevel], n = cfg.n, hero = game.hero;
+    const lengths = Array.from({ length: cfg.max - cfg.min + 1 }, (_, i) => cfg.min + i);
+    // how many steps away the food is: lengths she has found hard come up more often
+    const steps = +memory.pick(lengths.map(d => "plan:" + d), 1)[0].slice(5);
+    for (let attempt = 0; attempt < 300; attempt++) {
+      const player = { x: rand(n), y: rand(n) };
+      const trees = new Set();
+      while (trees.size < cfg.trees) {
+        const t = { x: rand(n), y: rand(n) };
+        if (Math.abs(t.x - player.x) + Math.abs(t.y - player.y) > 1) trees.add(key(t.x, t.y));
+      }
+      const { dist } = flood(player, trees, n);
+      const spots = [...dist.entries()].filter(([, d]) => d === steps).map(([k]) => k.split(",").map(Number));
+      if (!spots.length) continue;
+      const [x, y] = pick(spots);
+      return { type: "plan", n, player, start: { ...player }, trees, steps, plan: [], runs: 0, running: false, planHint: false,
+        items: [{ pic: hero.food, target: true, label: hero.f, x, y }], next: 0, hinting: false, bumps: 0, hintsHere: 0, locked: false, goal: null };
+    }
+  }
+  function renderPlan(now = -1, bad = -1, fresh = -1) {
+    $("#plan").innerHTML = P.plan.map((k, i) => `<span class="card${i === now ? " now" : ""}${now > i ? " done" : ""}${i === bad ? " bad" : ""}${i === fresh ? " new" : ""}" aria-label="${DIRS[k].w}"><svg viewBox="0 0 24 24"><path d="${ARROW_PATH[k]}"/></svg></span>`).join("");
+  }
+  function addStep(k) {
+    if (P.running) return;
+    pressKey(k);
+    if (P.plan.length >= MAX_PLAN) { say("That's a long plan! Press Go to try it."); return; }
+    P.plan.push(k);
+    renderPlan(-1, -1, P.plan.length - 1);
+    sfx("step");
+    if (P.planHint) showPlanHint(false); else clearHint();
+    if (settings.sayDir) say(cap(DIRS[k].w) + "!");
+  }
+  function undoStep() {
+    if (!P || P.type !== "plan" || P.running || P.locked || !P.plan.length) return;
+    P.plan.pop();
+    renderPlan(); sfx("bump");
+    if (P.planHint) showPlanHint(false); else clearHint();
+  }
+  function clearTrail() { root.querySelectorAll("#board .cell.trail").forEach(c => c.classList.remove("trail")); }
+  // follow the plan on paper: where does it end, and does it bump into anything on the way?
+  function simulate(plan) {
+    let p = { ...P.start };
+    const t = P.items[0];
+    for (let i = 0; i < plan.length; i++) {
+      const d = DIRS[plan[i]], nx = p.x + d.dx, ny = p.y + d.dy;
+      if (nx < 0 || ny < 0 || nx >= P.n || ny >= P.n || P.trees.has(key(nx, ny))) return { pos: p, bumpAt: i };
+      p = { x: nx, y: ny };
+      if (p.x === t.x && p.y === t.y) return { pos: p, reachedAt: i };
+    }
+    return { pos: p };
+  }
+  async function runPlan() {
+    if (!P || P.type !== "plan" || P.running || P.locked) return;
+    const p = P, g = game;
+    if (!p.plan.length) { say("Tap some arrows first to make a plan!"); return; }
+    p.running = true;
+    pressKeyEl(".key.go"); clearHint();
+    p.player = { ...p.start }; placePlayer(); clearTrail();
+    say("Go!");
+    await wait(450);
+    const t = p.items[0];
+    for (let i = 0; i < p.plan.length; i++) {
+      if (g !== game || p !== P) return;
+      renderPlan(i);
+      const d = DIRS[p.plan[i]], nx = p.player.x + d.dx, ny = p.player.y + d.dy;
+      const out = nx < 0 || ny < 0 || nx >= p.n || ny >= p.n;
+      if (out || p.trees.has(key(nx, ny))) {
+        sfx("bump"); hopAnim("bonk");
+        const b = $("#board"); b.classList.remove("bump"); void b.offsetWidth; b.classList.add("bump");
+        renderPlan(-1, i);
+        return planFailed(out ? "Oops! The plan goes into the fence." : "Oops! The plan bumps into a tree.", i);
+      }
+      $(`[data-k="${key(p.player.x, p.player.y)}"]`).classList.add("trail");
+      p.player = { x: nx, y: ny }; placePlayer(); hopAnim("go"); sfx("step");
+      if (settings.sayDir) say(cap(d.w) + "!");
+      await wait(560);
+      if (nx === t.x && ny === t.y) {
+        renderPlan(p.plan.length);
+        p.running = false;
+        memory.result("plan:" + p.steps, p.runs === 0 && p.hintsHere === 0);
+        if (p.runs > 0) p.hintsHere = Math.max(p.hintsHere, 1); // a gold paw only when the first plan works
+        return won(p.runs === 0 ? `Your plan worked first time! Yum yum!` : `Your plan worked! Yum yum!`);
+      }
+    }
+    planFailed(`Not there yet! The plan needs more arrows.`, -1);
+  }
+  async function planFailed(text, bad) {
+    const p = P;
+    p.runs++; game.hints++;
+    await say(text);
+    if (p !== P) return;
+    await wait(250);
+    // back to the start, with the plan kept so she can fix it
+    p.player = { ...p.start }; placePlayer(); clearTrail();
+    p.running = false;
+    renderPlan(-1, bad);
+    if (p.runs >= 2) showPlanHint(true);
+    else say(bad >= 0 ? "Tap Undo to fix it, then press Go." : "Add more arrows, then press Go.");
+  }
+  // After two plans that don't work: show the arrow that goes wrong, or light up the next arrow to add
+  function showPlanHint(speak) {
+    const sim = simulate(P.plan);
+    clearHint();
+    P.planHint = true;
+    if (sim.bumpAt !== undefined) {
+      renderPlan(-1, sim.bumpAt);
+      root.querySelector(".key.undo").classList.add("hint");
+      if (speak) { P.hintsHere++; say(`That ${DIRS[P.plan[sim.bumpAt]].w} arrow bumps into something. Tap Undo${P.plan.length - sim.bumpAt > 1 ? " until it's gone" : ""}.`); }
+      return;
+    }
+    if (sim.reachedAt !== undefined) { root.querySelector(".key.go").classList.add("hint"); if (speak) say("That plan works! Press Go!"); return; }
+    const k = firstStep(P.items[0], sim.pos);
+    if (!k) return;
+    root.querySelector(`.key[data-key="${k}"]`).classList.add("hint");
+    if (speak) { P.hintsHere++; say(`Add the ${DIRS[k].w} arrow next!`); }
+  }
+  function pressKeyEl(sel) { const el = root.querySelector(sel); if (el) { el.classList.add("pressed"); setTimeout(() => el.classList.remove("pressed"), 160); } }
+
   /* ---------- Hints: light up the arrow that leads toward the goal ---------- */
   let idleTimer = null;
   function clearIdle() { clearTimeout(idleTimer); }
   function armIdle() {
     clearIdle();
+    if (P && P.type === "plan") return; // planning has its own hints, after a plan doesn't work
     idleTimer = setTimeout(() => { if (P && !P.locked && current === "play" && gate.hidden) { showHint(true); armIdle(); } }, 9000);
   }
   function clearHint() { root.querySelectorAll(".key.hint").forEach(k => k.classList.remove("hint")); }
-  function firstStep(target) {
+  function firstStep(target, from = P.player) {
     // prefer a path that steps around the wrong numbers, letters and animals
     const others = new Set(P.items.filter(i => i !== target && !i.done).map(i => key(i.x, i.y)));
     for (const blocked of [new Set([...P.trees, ...others]), P.trees]) {
-      const { prev } = flood(P.player, blocked, P.n);
+      const { prev } = flood(from, blocked, P.n);
       let k = key(target.x, target.y);
       if (!prev.has(k)) continue;
       let step = prev.get(k);
-      while (step && key(step[0], step[1]) !== key(P.player.x, P.player.y)) { k = key(step[0], step[1]); step = prev.get(k); }
+      while (step && key(step[0], step[1]) !== key(from.x, from.y)) { k = key(step[0], step[1]); step = prev.get(k); }
       return step ? step[2] : null;
     }
     return null;
@@ -3205,11 +3468,14 @@ Pip.defineGame("arrow", (root, host) => {
   }
 
   function finishRound() {
+    if (Pip.roundDone) Pip.roundDone(); // lets Pip's 5 minutes know this round is over
     const g = game;
-    const before = level;
-    if (g.hints <= 1) level = Math.min(3, level + 1);
-    else if (g.hints >= 5) level = Math.max(1, level - 1);
-    store.set("level", level);
+    const planning = g.order[0] === "plan";
+    const before = planning ? planLevel : level;
+    let after = before;
+    if (g.hints <= 1) after = Math.min(3, before + 1);
+    else if (g.hints >= 5) after = Math.max(1, before - 1);
+    if (planning) { planLevel = after; store.set("planLevel", after); } else { level = after; store.set("level", after); }
     const missing = STICKERS.filter(s => !stickers[s[0]]);
     const s = pick(missing.length ? missing : STICKERS);
     stickers[s[0]] = (stickers[s[0]] || 0) + 1;
@@ -3219,7 +3485,7 @@ Pip.defineGame("arrow", (root, host) => {
     el.textContent = s[0]; el.style.animation = "none"; void el.offsetWidth; el.style.animation = "";
     $("#rewardText").textContent = `You got ${article(s[1])} sticker!`;
     show("reward"); sfx("win");
-    const bigger = level > before ? " Next time the farm gets bigger!" : "";
+    const bigger = after > before ? (planning ? " Next time the paths get longer!" : " Next time the farm gets bigger!") : "";
     say(`Great hopping, ${g.hero.name}! You got ${article(s[1])} sticker!${bigger}${touch ? "" : " Press space to play again."}`);
   }
 
@@ -3241,7 +3507,10 @@ Pip.defineGame("arrow", (root, host) => {
   });
 
   /* ---------- Buttons ---------- */
-  $("#pad").addEventListener("click", e => { const b = e.target.closest(".key"); if (b) move(b.dataset.key); });
+  $("#pad").addEventListener("click", e => {
+    const b = e.target.closest(".key"); if (!b) return;
+    if (b.dataset.act === "undo") undoStep(); else if (b.dataset.act === "go") runPlan(); else move(b.dataset.key);
+  });
   $("#homeBtn").addEventListener("click", goStart);
   $("#repeatBtn").addEventListener("click", () => { if (P && !P.locked) intro(); });
   $("#pipPlay").addEventListener("click", () => { if (P && !P.locked) intro(); });
@@ -3258,11 +3527,14 @@ Pip.defineGame("arrow", (root, host) => {
     if (isArrow || e.key === " ") e.preventDefault(); // stop the page from scrolling
     if (!gate.hidden) { if (isGo || isArrow) openGate(); return; }
     if (current === "start") {
-      if (e.key === "ArrowLeft" && !e.repeat) choose(settings.animal - 1);
+      if ((e.key === "ArrowUp" || e.key === "ArrowDown") && !e.repeat) setMode(settings.mode === "plan" ? "hop" : "plan");
+      else if (e.key === "ArrowLeft" && !e.repeat) choose(settings.animal - 1);
       else if (e.key === "ArrowRight" && !e.repeat) choose(settings.animal + 1);
       else if (isGo) startRound();
     } else if (current === "play") {
       if (isArrow && !e.repeat) move(e.key);
+      else if (P && P.type === "plan" && isGo) runPlan();
+      else if (P && P.type === "plan" && e.key === "Backspace") { e.preventDefault(); undoStep(); }
     } else if (current === "reward") {
       if (isGo) startRound();
     } else if (current === "book") {
@@ -3274,7 +3546,8 @@ Pip.defineGame("arrow", (root, host) => {
     { label: "Directions", prefix: "dir:", ids: ["up", "down", "left", "right"] },
     { label: "Animal sounds", prefix: "sound:", ids: SOUNDS.map(s => s[1]) },
     { label: "Numbers in order", prefix: "num:", ids: ["1", "2", "3", "4", "5"] },
-    { label: "Letters in order", prefix: "abc:", ids: ["A", "B", "C", "D", "E"] }
+    { label: "Letters in order", prefix: "abc:", ids: ["A", "B", "C", "D", "E"] },
+    { label: "Planning paths", prefix: "plan:", ids: ["2", "3", "4", "5", "6", "7"], show: d => `${d} steps` }
   ];
   Pip.registerProgress("arrow", PROGRESS);
 
@@ -3285,11 +3558,14 @@ Pip.defineGame("arrow", (root, host) => {
       const st = store.get("settings", {});
       settings.enabled = Object.assign({ snack: true, numbers: true, sounds: true, letters: true }, st.enabled || {});
       if (st.sayDir !== undefined) settings.sayDir = st.sayDir;
+      if (st.mode) settings.mode = st.mode;
       level = store.get("level", 1);
+      planLevel = store.get("planLevel", 1);
       interacted = true; gate.hidden = true; // she already clicked to get here
       goStart();
     },
-    leave() { game = null; P = null; clearIdle(); clearHint(); stopSpeech(); }
+    leave() { game = null; P = null; clearIdle(); clearHint(); stopSpeech(); },
+    play(mode) { settings.mode = mode; saveSettings(); renderStart(); startRound(); }
   });
   renderStart();
 });
@@ -3312,10 +3588,10 @@ Pip.defineGame("honey", (root, host) => {
 
   /* ---------- Saved settings ---------- */
   const store = Pip.storeFor("honey");
-  const ACTS = ["hunt", "words", "name", "mine"];
-  const ACT_NAMES = { hunt: "Letter hunt", words: "Animal words", name: "My name", mine: "My words" };
+  const ACTS = ["hunt", "words", "spell", "name", "mine"];
+  const ACT_NAMES = { hunt: "Letter hunt", words: "Animal words", spell: "Spell it", name: "My name", mine: "My words" };
   const settings = Object.assign({ voice: true, sfx: true, rate: 0.9, glow: false, first: "", last: "", words: [] }, store.get("settings", {}));
-  let levels = Object.assign({ hunt: 1, words: 1, name: 1, mine: 1 }, store.get("levels", {}));
+  let levels = Object.assign({ hunt: 1, words: 1, spell: 1, name: 1, mine: 1 }, store.get("levels", {}));
   const stickers = Pip.stickers;
   const saveSettings = () => store.set("settings", settings);
 
@@ -3369,6 +3645,12 @@ Pip.defineGame("honey", (root, host) => {
     s: ["🐍", "snake"], t: ["🐯", "tiger"], u: ["🦄", "unicorn"], v: ["🦅", "vulture"], w: ["🐳", "whale"], x: ["🦊", "fox"],
     y: ["🐃", "yak"], z: ["🦓", "zebra"]
   };
+  // Spell it: Pip says the word and she types it with nothing to copy. Only words spelled the way they sound.
+  const SPELL = {
+    short: [["cat", "🐱"], ["dog", "🐶"], ["pig", "🐷"], ["hen", "🐔"], ["fox", "🦊"], ["bus", "🚌"], ["sun", "☀️"], ["bed", "🛏️"], ["hat", "🎩"],
+      ["box", "📦"], ["cup", "🥤"], ["pen", "🖊️"], ["web", "🕸️"], ["mug", "☕"], ["van", "🚐"], ["bug", "🐛"], ["ten", "🔟"], ["map", "🗺️"]],
+    long: [["frog", "🐸"], ["crab", "🦀"], ["drum", "🥁"], ["flag", "🚩"], ["tent", "⛺"], ["milk", "🥛"], ["hand", "✋"], ["gift", "🎁"]]
+  };
   const WORDS = {
     1: [["cat", "🐱"], ["dog", "🐶"], ["pig", "🐷"], ["cow", "🐮"], ["hen", "🐔"], ["fox", "🦊"], ["bee", "🐝"], ["ant", "🐜"], ["owl", "🦉"]],
     2: [["frog", "🐸"], ["bear", "🐻"], ["duck", "🦆"], ["lion", "🦁"], ["fish", "🐟"], ["goat", "🐐"], ["seal", "🦭"], ["deer", "🦌"], ["wolf", "🐺"], ["crab", "🦀"]],
@@ -3415,7 +3697,7 @@ Pip.defineGame("honey", (root, host) => {
   }
   function goHome(speak = true) { game = null; T = null; stopSpeech(); clearHelp(); setGlow(null); renderHome(); show("home"); if (speak && interacted) say("Pick a game!"); }
 
-  const tileWords = { hunt: "Letter hunt! Find the letters.", words: "Animal words!", name: "Type your name!", mine: "My words!" };
+  const tileWords = { spell: "Spell it! Listen and type.", hunt: "Letter hunt! Find the letters.", words: "Animal words!", name: "Type your name!", mine: "My words!" };
   root.querySelectorAll(".tile").forEach(t => {
     t.addEventListener("mouseenter", () => { if (interacted && !game) say(tileWords[t.dataset.act]); });
     t.addEventListener("click", () => startRound(t.dataset.act));
@@ -3438,6 +3720,10 @@ Pip.defineGame("honey", (root, host) => {
       return shuffle(picks).map(c => ({ kind: "hunt", text: lv === 3 ? c : c.toUpperCase(), letter: c }));
     }
     if (act === "words") return memory.pick(WORDS[lv].map(x => "word:" + x[0]), 4).map(id => WORDS[lv].find(x => x[0] === id.slice(5))).map(([w, e]) => ({ kind: "word", text: w, pic: e }));
+    if (act === "spell") {
+      const list = lv === 3 ? SPELL.long : SPELL.short;
+      return memory.pick(list.map(x => "spell:" + x[0]), 4).map(id => list.find(x => x[0] === id.slice(6))).map(([w, e]) => ({ kind: "spell", text: w, pic: e }));
+    }
     if (act === "mine") return shuffle(Pip.settings.words).slice(0, 4).map(w => ({ kind: "mine", text: w, pic: "💛" }));
     const first = Pip.settings.first.trim(), last = Pip.settings.last.trim();
     if (!last) return [first, first, first].map(t => ({ kind: "first", text: t, pic: "😊" }));
@@ -3476,7 +3762,7 @@ Pip.defineGame("honey", (root, host) => {
     if (item.kind === "hunt") {
       stage.innerHTML = `<div class="big-letter" id="bigLetter">${esc(item.text)}</div><div id="isFor" style="min-height:1.6em"></div>`;
     } else {
-      const ghost = game.level < 3;
+      const ghost = game.level < 3 && item.kind !== "spell"; // Spell it never shows faint letters
       stage.innerHTML = `<div class="stage-pic" id="pic">${item.pic}</div><div class="combs" id="combs">` +
         [...item.text].map(c => {
           const n = needs(c);
@@ -3493,6 +3779,7 @@ Pip.defineGame("honey", (root, host) => {
   function promptText() {
     const it = T.item;
     if (it.kind === "hunt") return it.text === it.text.toLowerCase() ? `Find the little ${it.text} on the keyboard!` : `Find the letter ${it.text} on the keyboard!`;
+    if (it.kind === "spell") return "Listen, then spell the word!";
     if (it.kind === "first") return "Type your name!";
     if (it.kind === "last") return "Now type your surname!";
     if (it.kind === "full") return "Type your whole name!";
@@ -3501,6 +3788,7 @@ Pip.defineGame("honey", (root, host) => {
   function introText() {
     const it = T.item;
     if (it.kind === "hunt") return it.text === it.text.toLowerCase() ? `Find the little ${L(it.letter)}. On the keyboard it looks like a big ${L(it.letter)}.` : `Find the letter ${L(it.letter)} on the keyboard!`;
+    if (it.kind === "spell") return `Can you spell ${it.text}? ${cap(it.text)}.`;
     if (it.kind === "first") return `Let's type your name! ${spell(it.text)}.`;
     if (it.kind === "last") return `Now let's type your surname! ${spell(it.text)}.`;
     if (it.kind === "full") return `Now your whole name! Press the long space bar between your names.`;
@@ -3521,7 +3809,8 @@ Pip.defineGame("honey", (root, host) => {
   function markNow() {
     const cs = combs();
     cs.forEach((c, i) => c.classList.toggle("now", i === T.pos));
-    const glowAlways = game.level === 1 || settings.glow || T.glowShown;
+    // in Spell it the key only lights up as help, after a pause or two wrong keys
+    const glowAlways = (T.item.kind !== "spell" && (game.level === 1 || settings.glow)) || T.glowShown;
     setGlow(glowAlways ? expected() : null);
   }
 
@@ -3531,7 +3820,7 @@ Pip.defineGame("honey", (root, host) => {
   function armHelp() {
     clearHelp();
     if (!T || T.locked) return;
-    const delay = game.level === 2 ? 5000 : 8000;
+    const delay = T.item.kind === "spell" ? (game.level === 1 ? 6000 : 9000) : game.level === 2 ? 5000 : 8000;
     helpTimer = setTimeout(() => {
       if (!T || T.locked || current !== "play" || !gate.hidden) return;
       giveHelp(true);
@@ -3572,6 +3861,7 @@ Pip.defineGame("honey", (root, host) => {
       const what = c === " " ? "the space bar" : L(c);
       const need = want === " " ? "the long space bar" : L(want);
       if (T.wrongHere >= 2) { giveHelp(false); say(`That's ${what}. Find ${need}. It's glowing!`); }
+      else if (T.item.kind === "spell") say(`That's ${what}. Listen: ${T.item.text}.`); // don't give the letter away
       else say(`That's ${what}. Can you find ${need}?`);
     }
   }
@@ -3593,11 +3883,12 @@ Pip.defineGame("honey", (root, host) => {
     sfx("win"); bees($("#combs"));
     const pic = $("#pic"); if (pic) pic.classList.add("dance");
     const it = T.item;
-    memory.result(it.kind === "word" ? "word:" + it.text : it.kind === "mine" ? "mine:" + it.text : "name:" + it.kind, T.help === 0);
+    memory.result(it.kind === "word" ? "word:" + it.text : it.kind === "spell" ? "spell:" + it.text : it.kind === "mine" ? "mine:" + it.text : "name:" + it.kind, T.help === 0);
     let line;
     if (it.kind === "first") line = `${spell(it.text)}. ${it.text}! That's your name!`;
     else if (it.kind === "last") line = `${spell(it.text)}. ${it.text}! That's your surname!`;
     else if (it.kind === "full") line = `${it.text}! You typed your whole name!`;
+    else if (it.kind === "spell") line = `${spell(it.text)}. ${cap(it.text)}! You spelled it!`;
     else line = `${spell(it.text)}. ${cap(it.text)}! Well done!`;
     finishItem(line);
   }
@@ -3616,6 +3907,7 @@ Pip.defineGame("honey", (root, host) => {
   }
 
   function finishRound() {
+    if (Pip.roundDone) Pip.roundDone(); // lets Pip's 5 minutes know this round is over
     const g = game, before = levels[g.act];
     if (g.help <= 2) levels[g.act] = Math.min(3, before + 1);
     else if (g.help >= 8) levels[g.act] = Math.max(1, before - 1);
@@ -3678,6 +3970,7 @@ Pip.defineGame("honey", (root, host) => {
     { label: "Finding keys", prefix: "key:", ids: "abcdefghijklmnopqrstuvwxyz".split(""), show: c => c.toUpperCase() },
     { label: "Her name", prefix: "name:", ids: () => Pip.settings.first ? (Pip.settings.last ? ["first", "last", "full"] : ["first"]) : [], show: k => ({ first: "first name", last: "surname", full: "whole name" })[k] },
     { label: "Animal words", prefix: "word:", ids: [1, 2, 3].flatMap(l => WORDS[l].map(x => x[0])) },
+    { label: "Spelling by ear", prefix: "spell:", ids: SPELL.short.concat(SPELL.long).map(x => x[0]) },
     { label: "My words", prefix: "mine:", ids: () => Pip.settings.words }
   ];
   Pip.registerProgress("honey", PROGRESS);
@@ -3687,11 +3980,12 @@ Pip.defineGame("honey", (root, host) => {
     enter() {
       const st = store.get("settings", {});
       if (st.glow !== undefined) settings.glow = st.glow;
-      levels = Object.assign({ hunt: 1, words: 1, name: 1, mine: 1 }, store.get("levels", {}));
+      levels = Object.assign({ hunt: 1, words: 1, spell: 1, name: 1, mine: 1 }, store.get("levels", {}));
       gate.hidden = true;
       goHome();
     },
-    leave() { goHome(false); }
+    leave() { goHome(false); },
+    play(act) { startRound(act); }
   });
   renderHome();
 });
@@ -4060,6 +4354,7 @@ Pip.defineGame("reading", (root, host) => {
 
   /* ---------- End of round ---------- */
   function finishRound() {
+    if (Pip.roundDone) Pip.roundDone(); // lets Pip's 5 minutes know this round is over
     const g = game, before = levels[g.act];
     const share = g.good / g.items.length;
     if (share >= 0.8) levels[g.act] = Math.min(3, before + 1);
@@ -4145,7 +4440,8 @@ Pip.defineGame("reading", (root, host) => {
       levels = Object.assign({ sounds: 1, build: 1, read: 1, sight: 1 }, store.get("levels", {}));
       goHome();
     },
-    leave() { game = null; stopSpeech(); }
+    leave() { game = null; stopSpeech(); },
+    play(act) { startRound(act); }
   });
   renderHome();
 });
@@ -4522,6 +4818,7 @@ Pip.defineGame("trace", (root, host) => {
   }
 
   function finishRound() {
+    if (Pip.roundDone) Pip.roundDone(); // lets Pip's 5 minutes know this round is over
     const g = game, before = levels[g.act], share = g.good / g.items.length;
     if (g.act === "name") memory.result("name:first", share >= 0.8);
     if (share >= 0.8) levels[g.act] = Math.min(3, before + 1);
@@ -4582,7 +4879,8 @@ Pip.defineGame("trace", (root, host) => {
       levels = Object.assign({ big: 1, small: 1, numbers: 1, name: 1 }, store.get("levels", {}));
       goHome();
     },
-    leave() { game = null; T = null; stopSpeech(); }
+    leave() { game = null; T = null; stopSpeech(); },
+    play(act) { startRound(act); }
   });
   renderHome();
 });
@@ -4606,8 +4904,9 @@ Pip.defineGame("trace", (root, host) => {
   const GAMES = {
     meadow: { name: "Animal Meadow", acts: [["count", "Counting (to 10, then to 20)"], ["sums", "Sums (more or less, adding, taking away, making 10)"], ["letters", "Letters"], ["shapes", "Shapes and colours"], ["patterns", "Patterns"]], levels: "levels", maxLevel: { count: 4, sums: 4 } },
     arrow: { name: "Arrow Farm", acts: [["snack", "Snack time"], ["numbers", "Number path"], ["sounds", "Who says moo?"], ["letters", "Letter path"]], level: "level",
+      extraLevels: [["planLevel", "Plan the path"]],
       extras: [["sayDir", "Say the direction on every step (\"Up!\", \"Left!\")", true]] },
-    honey: { name: "Honey Keys", acts: [], levels: "levels", levelNames: { hunt: "Letter hunt", words: "Animal words", name: "My name", mine: "My words" },
+    honey: { name: "Honey Keys", acts: [], levels: "levels", levelNames: { hunt: "Letter hunt", words: "Animal words", spell: "Spell it", name: "My name", mine: "My words" },
       extras: [["glow", "Always light up the next key (turn off once she knows the keyboard a bit)", false]] },
     reading: { name: "Reading Nest", acts: [["sounds", "First sounds"], ["build", "Build a word"], ["read", "Read it!"], ["sight", "Little words"]], levels: "levels" },
     trace: { name: "Snail Trails", acts: [["big", "Big letters"], ["small", "Small letters"], ["numbers", "Numbers"], ["name", "Writing her name"]], levels: "levels" }
@@ -4618,7 +4917,7 @@ Pip.defineGame("trace", (root, host) => {
 
   function show(id) { ["hubHome", "hubBookScreen"].forEach(s => { $("#" + s).hidden = s !== id; }); }
   function renderHub() { $("#hubStickerCount").textContent = Object.keys(stickers).length; show("hubHome"); }
-  Pip.onHub = () => { renderHub(); if (interacted) say("Which game shall we play?"); };
+  Pip.onHub = () => { endSession(); renderHub(); if (interacted) say("Which game shall we play?"); };
 
   const doorWords = { meadow: "Animal Meadow!", arrow: "Arrow Farm!", honey: "Honey Keys!", reading: "Reading Nest!", trace: "Snail Trails!" };
   document.querySelectorAll(".door").forEach(d => {
@@ -4721,7 +5020,7 @@ Pip.defineGame("trace", (root, host) => {
     for (const [id, g] of Object.entries(GAMES)) {
       const st = Pip.storeFor(id);
       let rows;
-      if (g.level) rows = [["All puzzles", st.get("level", 1)]];
+      if (g.level) rows = [["Hop around", st.get("level", 1)], ...(g.extraLevels || []).map(([k, n]) => [n, st.get(k, 1)])];
       else {
         const lv = st.get("levels", {});
         const names = g.levelNames || Object.fromEntries(g.acts);
@@ -4734,7 +5033,7 @@ Pip.defineGame("trace", (root, host) => {
   $("#resetLevels").addEventListener("click", () => {
     for (const [id, g] of Object.entries(GAMES)) {
       const st = Pip.storeFor(id);
-      if (g.level) st.set("level", 1); else st.set("levels", {});
+      if (g.level) { st.set("level", 1); (g.extraLevels || []).forEach(([k]) => st.set(k, 1)); } else st.set("levels", {});
     }
     renderLevels();
   });
@@ -4762,19 +5061,21 @@ Pip.defineGame("trace", (root, host) => {
     });
   }
 
-  let returnTo = null;
+  let returnTo = null, openedAt = 0;
   function openSheet(focusName) {
     stopSpeech();
     returnTo = Pip.activeGame();
+    openedAt = Date.now();
     $("#firstName").value = settings.first; $("#lastName").value = settings.last; $("#myWords").value = settings.words.join("\n");
     $("#optVoice").checked = settings.voice; $("#optSfx").checked = settings.sfx; $("#optRate").value = String(settings.rate);
-    fillVoices(); renderProgress(); resetMemRow(); renderGameOptions(); renderLevels(); resetStickerRow();
+    fillVoices(); renderRec("first"); renderRec("last"); renderProgress(); resetMemRow(); renderGameOptions(); renderLevels(); resetStickerRow();
     $("#sheetWrap").hidden = false;
     $(".sheet").scrollTop = 0;
     if (focusName) { $("#firstName").scrollIntoView({ block: "center" }); $("#firstName").focus(); }
     else $("#closeSheet").focus({ preventScroll: true });
   }
   function closeSheet() {
+    if (recorder) recorder.stop();
     settings.first = $("#firstName").value.trim().replace(/\s+/g, " ");
     settings.last = $("#lastName").value.trim().replace(/\s+/g, " ");
     settings.words = $("#myWords").value.split("\n").map(w => w.trim().replace(/\s+/g, " ")).filter(w => w && /\p{L}/u.test(w)).slice(0, 40);
@@ -4784,9 +5085,130 @@ Pip.defineGame("trace", (root, host) => {
     if (returnTo && Pip.games[returnTo].enter) Pip.games[returnTo].enter(); else renderHub();
   }
   $("#closeSheet").addEventListener("click", closeSheet);
+  // Lifting the finger after the long press sends a tap to whatever is now underneath it, which can be
+  // "Save and close" or the dimmed background. Ignore every tap in the corner's first moment.
+  $("#sheetWrap").addEventListener("click", e => { if (Date.now() - openedAt < 800) { e.stopPropagation(); e.preventDefault(); } }, true);
   $("#sheetWrap").addEventListener("click", e => { if (e.target.id === "sheetWrap") closeSheet(); });
   window.addEventListener("keydown", e => { if (e.key === "Escape" && !$("#sheetWrap").hidden) closeSheet(); });
   Pip.sheetOpen = () => !$("#sheetWrap").hidden;
+
+  /* ---------- Pip's 5 minutes ----------
+     Three short rounds back to back, one from each of the three games where she has the most to practise:
+     items she got wrong recently count most, then items due for a refresh, then things she hasn't tried. */
+  const ACTIVITIES = [
+    ["meadow", "count", "Counting", ["count:"]], ["meadow", "sums", "Sums", ["more:", "add:", "sub:", "bond:"]],
+    ["meadow", "letters", "Letters", ["letter:"]], ["meadow", "shapes", "Shapes", ["shape:", "colour:"]], ["meadow", "patterns", "Patterns", ["pattern:"]],
+    ["arrow", "hop", "Arrow Farm", ["sound:", "num:", "abc:", "dir:"]], ["arrow", "plan", "Plan the path", ["plan:"]],
+    ["honey", "hunt", "Letter hunt", ["key:"]], ["honey", "words", "Animal words", ["word:"]], ["honey", "spell", "Spell it", ["spell:"]], ["honey", "name", "Typing your name", ["name:"]],
+    ["reading", "sounds", "First sounds", ["snd:"]], ["reading", "build", "Build a word", ["word:"]], ["reading", "read", "Read it", ["read:"]], ["reading", "sight", "Little words", ["sight:"]],
+    ["trace", "big", "Big letters", ["up:"]], ["trace", "small", "Small letters", ["low:"]], ["trace", "numbers", "Writing numbers", ["num:"]], ["trace", "name", "Writing your name", ["name:"]]
+  ];
+  function needScore(gid, prefixes) {
+    const now = Date.now();
+    let work = 0, due = 0, seen = 0;
+    for (const [k, r] of Object.entries(Pip.memoryFor(gid).data)) {
+      if (!r.seen || !prefixes.some(p => k.startsWith(p))) continue;
+      seen++;
+      if (r.box <= 1 && r.wrong > 0) work++;
+      else if (r.box >= 2 && (now - r.last) / 864e5 >= [0, 0, 1, 2, 4, 8][r.box]) due++;
+    }
+    return work * 3 + due + (seen ? 0 : 1.5);
+  }
+  function available([gid, act]) {
+    const en = gameSettings(gid).enabled || {};
+    if (en[act] === false) return false;
+    if (act === "name" && !settings.first.trim()) return false;
+    return true;
+  }
+  function choosePicks() {
+    const scored = ACTIVITIES.filter(available).map(([game, act, label, pre]) => ({ game, act, label, score: needScore(game, pre) + Math.random() }));
+    scored.sort((a, b) => b.score - a.score);
+    const picks = [], used = new Set();
+    for (const s of scored) if (picks.length < 3 && !used.has(s.game)) { picks.push(s); used.add(s.game); }
+    return picks;
+  }
+  let session = null;
+  function endSession() { session = null; $("#nextBtn").hidden = true; }
+  function launch() {
+    const p = session.picks[session.i];
+    session.ready = false; session.nudged = false;
+    Pip.openGame(p.game);
+    Pip.games[p.game].play(p.act);
+  }
+  $("#fiveBtn").addEventListener("click", () => {
+    const picks = choosePicks();
+    if (!picks.length) return;
+    session = { picks, i: 0 };
+    stopSpeech();
+    say(`Pip's five minutes! First, ${picks[0].label}!`).then(() => { if (session && session.i === 0 && !Pip.activeGame()) launch(); });
+  });
+  Pip.roundDone = () => { if (session) session.ready = true; };
+  // the Next button shows only on the game's "Round finished" screen
+  setInterval(() => {
+    const btn = $("#nextBtn"), id = Pip.activeGame();
+    const show = !!(session && session.ready && id && !Pip.games[id].root.querySelector("#reward").hidden);
+    if (show && btn.hidden) {
+      const next = session.picks[session.i + 1];
+      btn.innerHTML = next ? `Next: ${next.label} <span class="emoji">➡️</span>` : `All done! <span class="emoji">⭐</span>`;
+      if (!session.nudged) {
+        session.nudged = true;
+        setTimeout(() => { if (session && !btn.hidden) say(next ? `Tap Next for ${next.label}!` : "That's Pip's five minutes! Tap All done."); }, 5000);
+      }
+    }
+    btn.hidden = !show;
+  }, 400);
+  $("#nextBtn").addEventListener("click", () => {
+    $("#nextBtn").hidden = true;
+    if (!session) return;
+    session.i++;
+    if (session.i < session.picks.length) { stopSpeech(); launch(); return; }
+    endSession();
+    Pip.goHub();
+    setTimeout(() => say("Well done! That's Pip's five minutes. See you next time!"), 400);
+  });
+
+  /* ---------- Her name in your voice ---------- */
+  let recorder = null;
+  function renderRec(which) {
+    const box = $(which === "first" ? "#recFirst" : "#recLast");
+    const has = !!Pip.nameAudio[which];
+    box.innerHTML = `<span class="rec-label">${which === "first" ? "First name" : "Surname"}</span>`
+      + `<button type="button" class="sbtn" data-rec="${which}">🎙️ ${has ? "Record again" : "Record"}</button>`
+      + (has ? `<button type="button" class="sbtn" data-play="${which}">▶ Play</button><button type="button" class="sbtn danger" data-del="${which}">Remove</button>` : "");
+  }
+  async function record(which, btn) {
+    if (recorder) { recorder.stop(); return; } // a second tap stops early
+    let stream;
+    try { stream = await navigator.mediaDevices.getUserMedia({ audio: true }); }
+    catch (e) {
+      $("#recNote").textContent = "The microphone isn't available here. Open Pip's Garden from its home-screen icon or the GitHub link, then allow the microphone when asked.";
+      return;
+    }
+    stopSpeech();
+    const chunks = [];
+    // a low bitrate is plenty for one spoken name and keeps it small enough to store on the phone
+    try { recorder = new MediaRecorder(stream, { audioBitsPerSecond: 32000 }); } catch (e) { recorder = new MediaRecorder(stream); }
+    recorder.ondataavailable = e => { if (e.data.size) chunks.push(e.data); };
+    let left = 3;
+    const tick = setInterval(() => { left--; if (left <= 0) { if (recorder && recorder.state === "recording") recorder.stop(); } else btn.textContent = `■ Stop (${left})`; }, 1000);
+    recorder.onstop = () => {
+      clearInterval(tick);
+      stream.getTracks().forEach(t => t.stop());
+      recorder = null;
+      if (!chunks.length) { renderRec(which); return; }
+      const fr = new FileReader();
+      fr.onload = () => { Pip.nameAudio[which] = fr.result; Pip.saveNameAudio(); renderRec(which); Pip.playClip(fr.result); };
+      fr.readAsDataURL(new Blob(chunks, { type: chunks[0].type || "audio/webm" }));
+    };
+    recorder.start();
+    btn.textContent = `■ Stop (${left})`;
+  }
+  ["#recFirst", "#recLast"].forEach(sel => $(sel).addEventListener("click", e => {
+    const b = e.target.closest("button"); if (!b) return;
+    if (b.dataset.rec) record(b.dataset.rec, b);
+    else if (b.dataset.play) Pip.playClip(Pip.nameAudio[b.dataset.play]);
+    else if (b.dataset.del) { delete Pip.nameAudio[b.dataset.del]; Pip.saveNameAudio(); renderRec(b.dataset.del); }
+  }));
 
   // Android's Back gesture takes her back to the garden instead of closing the app
   const openGame = Pip.openGame;

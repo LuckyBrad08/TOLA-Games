@@ -47,9 +47,57 @@
     voice = (settings.voiceName && vs.find(v => v.name === settings.voiceName)) || vs[0] || null;
   }
   if (synth) { chooseVoice(); synth.addEventListener("voiceschanged", chooseVoice); }
+  /* ---------- Her name, in your voice ----------
+     A grown-up can record her first name and surname. When a line Pip says mentions them,
+     that part plays the recording instead of the computer voice. */
+  const nameAudio = shared.get("nameAudio", {});
+  const saveNameAudio = () => shared.set("nameAudio", nameAudio);
+  let clip = null;
+  function playClip(url) {
+    return new Promise(res => {
+      try {
+        clip = new Audio(url);
+        const done = () => { clearTimeout(guard); res(); };
+        const guard = setTimeout(done, 5000);
+        clip.onended = done; clip.onerror = done;
+        clip.play().catch(done);
+      } catch (e) { res(); }
+    });
+  }
+  const escRe = s => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  function nameParts(text) {
+    const names = [["first", settings.first], ["last", settings.last]].map(([k, n]) => [k, (n || "").trim()]).filter(([k, n]) => n && nameAudio[k]);
+    if (!names.length) return null;
+    const re = new RegExp(`(?<!\\p{L})(${names.map(([, n]) => escRe(n)).join("|")})(?!\\p{L})`, "giu");
+    const parts = [];
+    let last = 0, m;
+    while ((m = re.exec(text))) {
+      if (m.index > last) parts.push({ text: text.slice(last, m.index) });
+      const k = names.find(([, n]) => n.toLowerCase() === m[1].toLowerCase())[0];
+      parts.push({ clip: nameAudio[k] });
+      last = m.index + m[1].length;
+    }
+    if (!parts.length) return null;
+    if (last < text.length) parts.push({ text: text.slice(last) });
+    return parts;
+  }
+
   let speechToken = 0;
-  function stopSpeech() { speechToken++; if (synth) synth.cancel(); }
+  function stopSpeech() { speechToken++; if (synth) synth.cancel(); if (clip) { clip.pause(); clip = null; } }
   function speakOne(text, onstart) {
+    const parts = settings.voice ? nameParts(text) : null;
+    return parts ? speakParts(parts, onstart) : speakText(text, onstart);
+  }
+  async function speakParts(parts, onstart) {
+    const tok = speechToken;
+    onstart && onstart();
+    for (const p of parts) {
+      if (tok !== speechToken) return;
+      if (p.clip) await playClip(p.clip);
+      else if (/[\p{L}\p{N}]/u.test(p.text)) await speakText(p.text);
+    }
+  }
+  function speakText(text, onstart) {
     return new Promise(res => {
       if (!settings.voice || !synth) { onstart && onstart(); setTimeout(res, Math.max(450, text.length * 60)); return; }
       const u = new SpeechSynthesisUtterance(text);
@@ -163,6 +211,8 @@
     activeGame: () => active,
     registerProgress(id, groups) { games[id].progress = groups; },
     goHub: () => Pip.showHub(),
+    nameAudio, saveNameAudio, playClip,
+    roundDone: null,
     openGrownups: () => Pip.onGrownups && Pip.onGrownups(),
     onHub: null, onGrownups: null
   };

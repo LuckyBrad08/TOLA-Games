@@ -16,8 +16,9 @@
   const GAMES = {
     meadow: { name: "Animal Meadow", acts: [["count", "Counting (to 10, then to 20)"], ["sums", "Sums (more or less, adding, taking away, making 10)"], ["letters", "Letters"], ["shapes", "Shapes and colours"], ["patterns", "Patterns"]], levels: "levels", maxLevel: { count: 4, sums: 4 } },
     arrow: { name: "Arrow Farm", acts: [["snack", "Snack time"], ["numbers", "Number path"], ["sounds", "Who says moo?"], ["letters", "Letter path"]], level: "level",
+      extraLevels: [["planLevel", "Plan the path"]],
       extras: [["sayDir", "Say the direction on every step (\"Up!\", \"Left!\")", true]] },
-    honey: { name: "Honey Keys", acts: [], levels: "levels", levelNames: { hunt: "Letter hunt", words: "Animal words", name: "My name", mine: "My words" },
+    honey: { name: "Honey Keys", acts: [], levels: "levels", levelNames: { hunt: "Letter hunt", words: "Animal words", spell: "Spell it", name: "My name", mine: "My words" },
       extras: [["glow", "Always light up the next key (turn off once she knows the keyboard a bit)", false]] },
     reading: { name: "Reading Nest", acts: [["sounds", "First sounds"], ["build", "Build a word"], ["read", "Read it!"], ["sight", "Little words"]], levels: "levels" },
     trace: { name: "Snail Trails", acts: [["big", "Big letters"], ["small", "Small letters"], ["numbers", "Numbers"], ["name", "Writing her name"]], levels: "levels" }
@@ -28,7 +29,7 @@
 
   function show(id) { ["hubHome", "hubBookScreen"].forEach(s => { $("#" + s).hidden = s !== id; }); }
   function renderHub() { $("#hubStickerCount").textContent = Object.keys(stickers).length; show("hubHome"); }
-  Pip.onHub = () => { renderHub(); if (interacted) say("Which game shall we play?"); };
+  Pip.onHub = () => { endSession(); renderHub(); if (interacted) say("Which game shall we play?"); };
 
   const doorWords = { meadow: "Animal Meadow!", arrow: "Arrow Farm!", honey: "Honey Keys!", reading: "Reading Nest!", trace: "Snail Trails!" };
   document.querySelectorAll(".door").forEach(d => {
@@ -131,7 +132,7 @@
     for (const [id, g] of Object.entries(GAMES)) {
       const st = Pip.storeFor(id);
       let rows;
-      if (g.level) rows = [["All puzzles", st.get("level", 1)]];
+      if (g.level) rows = [["Hop around", st.get("level", 1)], ...(g.extraLevels || []).map(([k, n]) => [n, st.get(k, 1)])];
       else {
         const lv = st.get("levels", {});
         const names = g.levelNames || Object.fromEntries(g.acts);
@@ -144,7 +145,7 @@
   $("#resetLevels").addEventListener("click", () => {
     for (const [id, g] of Object.entries(GAMES)) {
       const st = Pip.storeFor(id);
-      if (g.level) st.set("level", 1); else st.set("levels", {});
+      if (g.level) { st.set("level", 1); (g.extraLevels || []).forEach(([k]) => st.set(k, 1)); } else st.set("levels", {});
     }
     renderLevels();
   });
@@ -172,19 +173,21 @@
     });
   }
 
-  let returnTo = null;
+  let returnTo = null, openedAt = 0;
   function openSheet(focusName) {
     stopSpeech();
     returnTo = Pip.activeGame();
+    openedAt = Date.now();
     $("#firstName").value = settings.first; $("#lastName").value = settings.last; $("#myWords").value = settings.words.join("\n");
     $("#optVoice").checked = settings.voice; $("#optSfx").checked = settings.sfx; $("#optRate").value = String(settings.rate);
-    fillVoices(); renderProgress(); resetMemRow(); renderGameOptions(); renderLevels(); resetStickerRow();
+    fillVoices(); renderRec("first"); renderRec("last"); renderProgress(); resetMemRow(); renderGameOptions(); renderLevels(); resetStickerRow();
     $("#sheetWrap").hidden = false;
     $(".sheet").scrollTop = 0;
     if (focusName) { $("#firstName").scrollIntoView({ block: "center" }); $("#firstName").focus(); }
     else $("#closeSheet").focus({ preventScroll: true });
   }
   function closeSheet() {
+    if (recorder) recorder.stop();
     settings.first = $("#firstName").value.trim().replace(/\s+/g, " ");
     settings.last = $("#lastName").value.trim().replace(/\s+/g, " ");
     settings.words = $("#myWords").value.split("\n").map(w => w.trim().replace(/\s+/g, " ")).filter(w => w && /\p{L}/u.test(w)).slice(0, 40);
@@ -194,9 +197,130 @@
     if (returnTo && Pip.games[returnTo].enter) Pip.games[returnTo].enter(); else renderHub();
   }
   $("#closeSheet").addEventListener("click", closeSheet);
+  // Lifting the finger after the long press sends a tap to whatever is now underneath it, which can be
+  // "Save and close" or the dimmed background. Ignore every tap in the corner's first moment.
+  $("#sheetWrap").addEventListener("click", e => { if (Date.now() - openedAt < 800) { e.stopPropagation(); e.preventDefault(); } }, true);
   $("#sheetWrap").addEventListener("click", e => { if (e.target.id === "sheetWrap") closeSheet(); });
   window.addEventListener("keydown", e => { if (e.key === "Escape" && !$("#sheetWrap").hidden) closeSheet(); });
   Pip.sheetOpen = () => !$("#sheetWrap").hidden;
+
+  /* ---------- Pip's 5 minutes ----------
+     Three short rounds back to back, one from each of the three games where she has the most to practise:
+     items she got wrong recently count most, then items due for a refresh, then things she hasn't tried. */
+  const ACTIVITIES = [
+    ["meadow", "count", "Counting", ["count:"]], ["meadow", "sums", "Sums", ["more:", "add:", "sub:", "bond:"]],
+    ["meadow", "letters", "Letters", ["letter:"]], ["meadow", "shapes", "Shapes", ["shape:", "colour:"]], ["meadow", "patterns", "Patterns", ["pattern:"]],
+    ["arrow", "hop", "Arrow Farm", ["sound:", "num:", "abc:", "dir:"]], ["arrow", "plan", "Plan the path", ["plan:"]],
+    ["honey", "hunt", "Letter hunt", ["key:"]], ["honey", "words", "Animal words", ["word:"]], ["honey", "spell", "Spell it", ["spell:"]], ["honey", "name", "Typing your name", ["name:"]],
+    ["reading", "sounds", "First sounds", ["snd:"]], ["reading", "build", "Build a word", ["word:"]], ["reading", "read", "Read it", ["read:"]], ["reading", "sight", "Little words", ["sight:"]],
+    ["trace", "big", "Big letters", ["up:"]], ["trace", "small", "Small letters", ["low:"]], ["trace", "numbers", "Writing numbers", ["num:"]], ["trace", "name", "Writing your name", ["name:"]]
+  ];
+  function needScore(gid, prefixes) {
+    const now = Date.now();
+    let work = 0, due = 0, seen = 0;
+    for (const [k, r] of Object.entries(Pip.memoryFor(gid).data)) {
+      if (!r.seen || !prefixes.some(p => k.startsWith(p))) continue;
+      seen++;
+      if (r.box <= 1 && r.wrong > 0) work++;
+      else if (r.box >= 2 && (now - r.last) / 864e5 >= [0, 0, 1, 2, 4, 8][r.box]) due++;
+    }
+    return work * 3 + due + (seen ? 0 : 1.5);
+  }
+  function available([gid, act]) {
+    const en = gameSettings(gid).enabled || {};
+    if (en[act] === false) return false;
+    if (act === "name" && !settings.first.trim()) return false;
+    return true;
+  }
+  function choosePicks() {
+    const scored = ACTIVITIES.filter(available).map(([game, act, label, pre]) => ({ game, act, label, score: needScore(game, pre) + Math.random() }));
+    scored.sort((a, b) => b.score - a.score);
+    const picks = [], used = new Set();
+    for (const s of scored) if (picks.length < 3 && !used.has(s.game)) { picks.push(s); used.add(s.game); }
+    return picks;
+  }
+  let session = null;
+  function endSession() { session = null; $("#nextBtn").hidden = true; }
+  function launch() {
+    const p = session.picks[session.i];
+    session.ready = false; session.nudged = false;
+    Pip.openGame(p.game);
+    Pip.games[p.game].play(p.act);
+  }
+  $("#fiveBtn").addEventListener("click", () => {
+    const picks = choosePicks();
+    if (!picks.length) return;
+    session = { picks, i: 0 };
+    stopSpeech();
+    say(`Pip's five minutes! First, ${picks[0].label}!`).then(() => { if (session && session.i === 0 && !Pip.activeGame()) launch(); });
+  });
+  Pip.roundDone = () => { if (session) session.ready = true; };
+  // the Next button shows only on the game's "Round finished" screen
+  setInterval(() => {
+    const btn = $("#nextBtn"), id = Pip.activeGame();
+    const show = !!(session && session.ready && id && !Pip.games[id].root.querySelector("#reward").hidden);
+    if (show && btn.hidden) {
+      const next = session.picks[session.i + 1];
+      btn.innerHTML = next ? `Next: ${next.label} <span class="emoji">➡️</span>` : `All done! <span class="emoji">⭐</span>`;
+      if (!session.nudged) {
+        session.nudged = true;
+        setTimeout(() => { if (session && !btn.hidden) say(next ? `Tap Next for ${next.label}!` : "That's Pip's five minutes! Tap All done."); }, 5000);
+      }
+    }
+    btn.hidden = !show;
+  }, 400);
+  $("#nextBtn").addEventListener("click", () => {
+    $("#nextBtn").hidden = true;
+    if (!session) return;
+    session.i++;
+    if (session.i < session.picks.length) { stopSpeech(); launch(); return; }
+    endSession();
+    Pip.goHub();
+    setTimeout(() => say("Well done! That's Pip's five minutes. See you next time!"), 400);
+  });
+
+  /* ---------- Her name in your voice ---------- */
+  let recorder = null;
+  function renderRec(which) {
+    const box = $(which === "first" ? "#recFirst" : "#recLast");
+    const has = !!Pip.nameAudio[which];
+    box.innerHTML = `<span class="rec-label">${which === "first" ? "First name" : "Surname"}</span>`
+      + `<button type="button" class="sbtn" data-rec="${which}">🎙️ ${has ? "Record again" : "Record"}</button>`
+      + (has ? `<button type="button" class="sbtn" data-play="${which}">▶ Play</button><button type="button" class="sbtn danger" data-del="${which}">Remove</button>` : "");
+  }
+  async function record(which, btn) {
+    if (recorder) { recorder.stop(); return; } // a second tap stops early
+    let stream;
+    try { stream = await navigator.mediaDevices.getUserMedia({ audio: true }); }
+    catch (e) {
+      $("#recNote").textContent = "The microphone isn't available here. Open Pip's Garden from its home-screen icon or the GitHub link, then allow the microphone when asked.";
+      return;
+    }
+    stopSpeech();
+    const chunks = [];
+    // a low bitrate is plenty for one spoken name and keeps it small enough to store on the phone
+    try { recorder = new MediaRecorder(stream, { audioBitsPerSecond: 32000 }); } catch (e) { recorder = new MediaRecorder(stream); }
+    recorder.ondataavailable = e => { if (e.data.size) chunks.push(e.data); };
+    let left = 3;
+    const tick = setInterval(() => { left--; if (left <= 0) { if (recorder && recorder.state === "recording") recorder.stop(); } else btn.textContent = `■ Stop (${left})`; }, 1000);
+    recorder.onstop = () => {
+      clearInterval(tick);
+      stream.getTracks().forEach(t => t.stop());
+      recorder = null;
+      if (!chunks.length) { renderRec(which); return; }
+      const fr = new FileReader();
+      fr.onload = () => { Pip.nameAudio[which] = fr.result; Pip.saveNameAudio(); renderRec(which); Pip.playClip(fr.result); };
+      fr.readAsDataURL(new Blob(chunks, { type: chunks[0].type || "audio/webm" }));
+    };
+    recorder.start();
+    btn.textContent = `■ Stop (${left})`;
+  }
+  ["#recFirst", "#recLast"].forEach(sel => $(sel).addEventListener("click", e => {
+    const b = e.target.closest("button"); if (!b) return;
+    if (b.dataset.rec) record(b.dataset.rec, b);
+    else if (b.dataset.play) Pip.playClip(Pip.nameAudio[b.dataset.play]);
+    else if (b.dataset.del) { delete Pip.nameAudio[b.dataset.del]; Pip.saveNameAudio(); renderRec(b.dataset.del); }
+  }));
 
   // Android's Back gesture takes her back to the garden instead of closing the app
   const openGame = Pip.openGame;

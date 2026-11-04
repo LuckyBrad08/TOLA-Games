@@ -610,6 +610,7 @@ Pip.defineGame("trace", (root, host) => {
   }
 
   function finishRound() {
+    if (Pip.roundDone) Pip.roundDone(); // lets Pip's 5 minutes know this round is over
     const g = game, before = levels[g.act], share = g.good / g.items.length;
     if (g.act === "name") memory.result("name:first", share >= 0.8);
     if (share >= 0.8) levels[g.act] = Math.min(3, before + 1);
@@ -670,7 +671,8 @@ Pip.defineGame("trace", (root, host) => {
       levels = Object.assign({ big: 1, small: 1, numbers: 1, name: 1 }, store.get("levels", {}));
       goHome();
     },
-    leave() { game = null; T = null; stopSpeech(); }
+    leave() { game = null; T = null; stopSpeech(); },
+    play(act) { startRound(act); }
   });
   renderHome();
 });

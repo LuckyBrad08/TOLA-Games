@@ -74,7 +74,7 @@ h2 { font-family: var(--font-display); font-weight: 800; font-size: clamp(30px, 
 .home-head { display: flex; align-items: center; gap: 18px; margin-top: 2vh; }
 .home-head .pip { width: 104px; height: 104px; font-size: 66px; }
 .home-sub { font-family: var(--font-display); font-weight: 600; font-size: 22px; margin: 6px 0 0; }
-.tiles { display: grid; grid-template-columns: repeat(4, minmax(0, 210px)); gap: 22px; justify-content: center; width: 100%; margin-top: 3vh; }
+.tiles { display: grid; grid-template-columns: repeat(auto-fit, 196px); gap: 22px; justify-content: center; width: 100%; margin-top: 3vh; }
 .tile { border: 0; border-radius: 34px; padding: 18px 12px 14px; background: var(--paper);
   box-shadow: 0 10px 0 var(--edge), 0 14px 24px rgba(42,42,74,.14);
   display: flex; flex-direction: column; align-items: center; gap: 10px; min-height: 220px; transition: transform .15s; }
@@ -83,6 +83,9 @@ h2 { font-family: var(--font-display); font-weight: 800; font-size: clamp(30px, 
 .tile-name { font-family: var(--font-display); font-weight: 800; font-size: 25px; line-height: 1; }
 .t-hunt { --wash: #fff0c4; --edge: #f0c24a; }
 .t-words { --wash: #e2f4e7; --edge: #8ccf9f; }
+.t-spell { --wash: #ffe8d6; --edge: #f0a35e; }
+.art-spell { display: grid; justify-items: center; gap: 4px; font-family: var(--font-read); font-weight: 700; font-size: 30px; letter-spacing: .08em; }
+.art-spell .emoji { font-size: 42px; letter-spacing: 0; }
 .t-name { --wash: #ffe0e8; --edge: #ef8fa3; }
 .t-mine { --wash: #e4e8ff; --edge: #9aa6ea; }
 .art-keys { display: flex; gap: 6px; }
@@ -229,6 +232,10 @@ h2 { font-family: var(--font-display); font-weight: 800; font-size: clamp(30px, 
         <div class="tile-art"><div class="art-keys"><span>A</span><span class="lit">S</span><span>D</span></div></div>
         <span class="tile-name">Letter hunt</span>
       </button>
+      <button class="tile t-spell" data-act="spell" aria-label="Spell it">
+        <div class="tile-art art-spell"><span class="emoji">👂</span>c_t</div>
+        <span class="tile-name">Spell it</span>
+      </button>
       <button class="tile t-words" data-act="words" aria-label="Animal words">
         <div class="tile-art art-word"><span class="emoji">🐱</span>cat</div>
         <span class="tile-name">Animal words</span>
@@ -355,10 +362,10 @@ h2 { font-family: var(--font-display); font-weight: 800; font-size: clamp(30px, 
     get(k, d) { try { const v = localStorage.getItem("honeykeys." + k); return v == null ? d : JSON.parse(v); } catch (e) { return d; } },
     set(k, v) { try { localStorage.setItem("honeykeys." + k, JSON.stringify(v)); } catch (e) {} }
   };
-  const ACTS = ["hunt", "words", "name", "mine"];
-  const ACT_NAMES = { hunt: "Letter hunt", words: "Animal words", name: "My name", mine: "My words" };
+  const ACTS = ["hunt", "words", "spell", "name", "mine"];
+  const ACT_NAMES = { hunt: "Letter hunt", words: "Animal words", spell: "Spell it", name: "My name", mine: "My words" };
   const settings = Object.assign({ voice: true, sfx: true, rate: 0.9, glow: false, first: "", last: "", words: [] }, store.get("settings", {}));
-  let levels = Object.assign({ hunt: 1, words: 1, name: 1, mine: 1 }, store.get("levels", {}));
+  let levels = Object.assign({ hunt: 1, words: 1, spell: 1, name: 1, mine: 1 }, store.get("levels", {}));
   let stickers = store.get("stickers", {});
   const saveSettings = () => store.set("settings", settings);
 
@@ -486,6 +493,12 @@ h2 { font-family: var(--font-display); font-weight: 800; font-size: clamp(30px, 
     s: ["🐍", "snake"], t: ["🐯", "tiger"], u: ["🦄", "unicorn"], v: ["🦅", "vulture"], w: ["🐳", "whale"], x: ["🦊", "fox"],
     y: ["🐃", "yak"], z: ["🦓", "zebra"]
   };
+  // Spell it: Pip says the word and she types it with nothing to copy. Only words spelled the way they sound.
+  const SPELL = {
+    short: [["cat", "🐱"], ["dog", "🐶"], ["pig", "🐷"], ["hen", "🐔"], ["fox", "🦊"], ["bus", "🚌"], ["sun", "☀️"], ["bed", "🛏️"], ["hat", "🎩"],
+      ["box", "📦"], ["cup", "🥤"], ["pen", "🖊️"], ["web", "🕸️"], ["mug", "☕"], ["van", "🚐"], ["bug", "🐛"], ["ten", "🔟"], ["map", "🗺️"]],
+    long: [["frog", "🐸"], ["crab", "🦀"], ["drum", "🥁"], ["flag", "🚩"], ["tent", "⛺"], ["milk", "🥛"], ["hand", "✋"], ["gift", "🎁"]]
+  };
   const WORDS = {
     1: [["cat", "🐱"], ["dog", "🐶"], ["pig", "🐷"], ["cow", "🐮"], ["hen", "🐔"], ["fox", "🦊"], ["bee", "🐝"], ["ant", "🐜"], ["owl", "🦉"]],
     2: [["frog", "🐸"], ["bear", "🐻"], ["duck", "🦆"], ["lion", "🦁"], ["fish", "🐟"], ["goat", "🐐"], ["seal", "🦭"], ["deer", "🦌"], ["wolf", "🐺"], ["crab", "🦀"]],
@@ -531,7 +544,7 @@ h2 { font-family: var(--font-display); font-weight: 800; font-size: clamp(30px, 
   }
   function goHome(speak = true) { game = null; T = null; stopSpeech(); clearHelp(); setGlow(null); renderHome(); show("home"); if (speak && interacted) say("Pick a game!"); }
 
-  const tileWords = { hunt: "Letter hunt! Find the letters.", words: "Animal words!", name: "Type your name!", mine: "My words!" };
+  const tileWords = { spell: "Spell it! Listen and type.", hunt: "Letter hunt! Find the letters.", words: "Animal words!", name: "Type your name!", mine: "My words!" };
   document.querySelectorAll(".tile").forEach(t => {
     t.addEventListener("mouseenter", () => { if (interacted && !game) say(tileWords[t.dataset.act]); });
     t.addEventListener("click", () => startRound(t.dataset.act));
@@ -554,6 +567,10 @@ h2 { font-family: var(--font-display); font-weight: 800; font-size: clamp(30px, 
       return shuffle(picks).map(c => ({ kind: "hunt", text: lv === 3 ? c : c.toUpperCase(), letter: c }));
     }
     if (act === "words") return memory.pick(WORDS[lv].map(x => "word:" + x[0]), 4).map(id => WORDS[lv].find(x => x[0] === id.slice(5))).map(([w, e]) => ({ kind: "word", text: w, pic: e }));
+    if (act === "spell") {
+      const list = lv === 3 ? SPELL.long : SPELL.short;
+      return memory.pick(list.map(x => "spell:" + x[0]), 4).map(id => list.find(x => x[0] === id.slice(6))).map(([w, e]) => ({ kind: "spell", text: w, pic: e }));
+    }
     if (act === "mine") return shuffle(settings.words).slice(0, 4).map(w => ({ kind: "mine", text: w, pic: "💛" }));
     const first = settings.first.trim(), last = settings.last.trim();
     if (!last) return [first, first, first].map(t => ({ kind: "first", text: t, pic: "😊" }));
@@ -592,7 +609,7 @@ h2 { font-family: var(--font-display); font-weight: 800; font-size: clamp(30px, 
     if (item.kind === "hunt") {
       stage.innerHTML = `<div class="big-letter" id="bigLetter">${esc(item.text)}</div><div id="isFor" style="min-height:1.6em"></div>`;
     } else {
-      const ghost = game.level < 3;
+      const ghost = game.level < 3 && item.kind !== "spell"; // Spell it never shows faint letters
       stage.innerHTML = `<div class="stage-pic" id="pic">${item.pic}</div><div class="combs" id="combs">` +
         [...item.text].map(c => {
           const n = needs(c);
@@ -609,6 +626,7 @@ h2 { font-family: var(--font-display); font-weight: 800; font-size: clamp(30px, 
   function promptText() {
     const it = T.item;
     if (it.kind === "hunt") return it.text === it.text.toLowerCase() ? `Find the little ${it.text} on the keyboard!` : `Find the letter ${it.text} on the keyboard!`;
+    if (it.kind === "spell") return "Listen, then spell the word!";
     if (it.kind === "first") return "Type your name!";
     if (it.kind === "last") return "Now type your surname!";
     if (it.kind === "full") return "Type your whole name!";
@@ -617,6 +635,7 @@ h2 { font-family: var(--font-display); font-weight: 800; font-size: clamp(30px, 
   function introText() {
     const it = T.item;
     if (it.kind === "hunt") return it.text === it.text.toLowerCase() ? `Find the little ${L(it.letter)}. On the keyboard it looks like a big ${L(it.letter)}.` : `Find the letter ${L(it.letter)} on the keyboard!`;
+    if (it.kind === "spell") return `Can you spell ${it.text}? ${cap(it.text)}.`;
     if (it.kind === "first") return `Let's type your name! ${spell(it.text)}.`;
     if (it.kind === "last") return `Now let's type your surname! ${spell(it.text)}.`;
     if (it.kind === "full") return `Now your whole name! Press the long space bar between your names.`;
@@ -637,7 +656,8 @@ h2 { font-family: var(--font-display); font-weight: 800; font-size: clamp(30px, 
   function markNow() {
     const cs = combs();
     cs.forEach((c, i) => c.classList.toggle("now", i === T.pos));
-    const glowAlways = game.level === 1 || settings.glow || T.glowShown;
+    // in Spell it the key only lights up as help, after a pause or two wrong keys
+    const glowAlways = (T.item.kind !== "spell" && (game.level === 1 || settings.glow)) || T.glowShown;
     setGlow(glowAlways ? expected() : null);
   }
 
@@ -647,7 +667,7 @@ h2 { font-family: var(--font-display); font-weight: 800; font-size: clamp(30px, 
   function armHelp() {
     clearHelp();
     if (!T || T.locked) return;
-    const delay = game.level === 2 ? 5000 : 8000;
+    const delay = T.item.kind === "spell" ? (game.level === 1 ? 6000 : 9000) : game.level === 2 ? 5000 : 8000;
     helpTimer = setTimeout(() => {
       if (!T || T.locked || current !== "play" || !gate.hidden) return;
       giveHelp(true);
@@ -688,6 +708,7 @@ h2 { font-family: var(--font-display); font-weight: 800; font-size: clamp(30px, 
       const what = c === " " ? "the space bar" : L(c);
       const need = want === " " ? "the long space bar" : L(want);
       if (T.wrongHere >= 2) { giveHelp(false); say(`That's ${what}. Find ${need}. It's glowing!`); }
+      else if (T.item.kind === "spell") say(`That's ${what}. Listen: ${T.item.text}.`); // don't give the letter away
       else say(`That's ${what}. Can you find ${need}?`);
     }
   }
@@ -709,11 +730,12 @@ h2 { font-family: var(--font-display); font-weight: 800; font-size: clamp(30px, 
     sfx("win"); bees($("#combs"));
     const pic = $("#pic"); if (pic) pic.classList.add("dance");
     const it = T.item;
-    memory.result(it.kind === "word" ? "word:" + it.text : it.kind === "mine" ? "mine:" + it.text : "name:" + it.kind, T.help === 0);
+    memory.result(it.kind === "word" ? "word:" + it.text : it.kind === "spell" ? "spell:" + it.text : it.kind === "mine" ? "mine:" + it.text : "name:" + it.kind, T.help === 0);
     let line;
     if (it.kind === "first") line = `${spell(it.text)}. ${it.text}! That's your name!`;
     else if (it.kind === "last") line = `${spell(it.text)}. ${it.text}! That's your surname!`;
     else if (it.kind === "full") line = `${it.text}! You typed your whole name!`;
+    else if (it.kind === "spell") line = `${spell(it.text)}. ${cap(it.text)}! You spelled it!`;
     else line = `${spell(it.text)}. ${cap(it.text)}! Well done!`;
     finishItem(line);
   }
@@ -804,6 +826,7 @@ h2 { font-family: var(--font-display); font-weight: 800; font-size: clamp(30px, 
     { label: "Finding keys", prefix: "key:", ids: "abcdefghijklmnopqrstuvwxyz".split(""), show: c => c.toUpperCase() },
     { label: "Her name", prefix: "name:", ids: () => settings.first ? (settings.last ? ["first", "last", "full"] : ["first"]) : [], show: k => ({ first: "first name", last: "surname", full: "whole name" })[k] },
     { label: "Animal words", prefix: "word:", ids: [1, 2, 3].flatMap(l => WORDS[l].map(x => x[0])) },
+    { label: "Spelling by ear", prefix: "spell:", ids: SPELL.short.concat(SPELL.long).map(x => x[0]) },
     { label: "My words", prefix: "mine:", ids: () => settings.words }
   ];
   function renderProgress() {

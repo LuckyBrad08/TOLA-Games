@@ -79,6 +79,14 @@ h1 {
 .pill:hover { transform: translateY(-3px); }
 .pill .emoji { font-size: 26px; }
 .badge { background: var(--sun); border-radius: 999px; padding: 0 10px; font-size: 18px; }
+.pill.five { background: var(--sun); box-shadow: 0 6px 0 #d9a520; }
+/* "Next game" during Pip's 5 minutes: floats over the game's reward screen */
+.next-btn { position: fixed; z-index: 6; top: max(14px, env(safe-area-inset-top, 0px)); right: max(16px, env(safe-area-inset-right, 0px));
+  border: 0; border-radius: 999px; padding: 12px 22px; background: var(--sun); box-shadow: 0 6px 0 #d9a520, 0 10px 20px rgba(34, 48, 74, .2);
+  font-family: var(--font-display); font-weight: 800; font-size: 22px; display: inline-flex; align-items: center; gap: 10px; animation: nudge 1.4s ease-in-out infinite; }
+@keyframes nudge { 50% { transform: translateY(-4px) scale(1.04); } }
+.rec-block { margin-top: 10px; padding: 10px 14px; border-radius: 14px; background: #f5f9fb; }
+.rec-label { font-weight: 700; min-width: 92px; }
 .grownup { touch-action: none; position: relative; overflow: hidden; border: 2px solid rgba(255,255,255,.8); border-radius: 999px; padding: 8px 16px; background: rgba(255,255,255,.25); color: var(--paper); font-size: 15px; font-weight: 700; }
 .grownup .fill { position: absolute; inset: 0; background: rgba(255,255,255,.5); transform: scaleX(0); transform-origin: left; }
 .grownup.holding .fill { transform: scaleX(1); transition: transform 1.5s linear; }
@@ -143,6 +151,7 @@ h1 {
   .door-skills { display: none; }
   .pill { padding: 8px 16px; font-size: 18px; }
   .round-btn { width: 48px; height: 48px; font-size: 22px; }
+  .next-btn { font-size: 17px; padding: 8px 16px; top: max(8px, env(safe-area-inset-top, 0px)); }
   .book { padding: 14px; gap: 10px; grid-template-columns: repeat(auto-fill, minmax(72px, 1fr)); }
   .slotb { font-size: 42px; border-radius: 18px; }
 }
@@ -182,6 +191,7 @@ h1 {
       </button>
     </div>
     <div class="hub-foot">
+      <button class="pill five" id="fiveBtn"><span class="emoji">🌟</span> Pip's 5 minutes</button>
       <button class="pill" id="hubBook"><span class="emoji">⭐</span> Stickers <span class="badge" id="hubStickerCount">0</span></button>
       <button class="grownup" id="grownBtn" title="Press and hold to open settings and progress"><span class="fill"></span><span>Grown-ups: press and hold</span></button>
     </div>
@@ -202,6 +212,7 @@ h1 {
 <div class="game-host" id="host-honey" hidden></div>
 <div class="game-host" id="host-reading" hidden></div>
 <div class="game-host" id="host-trace" hidden></div>
+<button class="next-btn" id="nextBtn" hidden></button>
 
 <div class="sheet-wrap" id="sheetWrap" hidden>
   <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="sheetTitle">
@@ -217,6 +228,12 @@ h1 {
     <div class="field"><label for="firstName" style="padding:0"><span>First name</span></label><input type="text" id="firstName" autocomplete="off" spellcheck="false"></div>
     <div class="field"><label for="lastName" style="padding:0"><span>Surname</span></label><input type="text" id="lastName" autocomplete="off" spellcheck="false"></div>
     <p>Write it with capitals the way it should look. Honey Keys teaches her to type it; Reading Nest asks her to find it among other names.</p>
+    <div class="rec-block">
+      <b>Her name in your voice</b>
+      <div class="row" id="recFirst"></div>
+      <div class="row" id="recLast"></div>
+      <p id="recNote">Computer voices often get names wrong. Record her name once and Pip plays your recording whenever it says it. Say just the name, close to the microphone.</p>
+    </div>
     <div class="field"><label for="myWords" style="padding:0"><span>My words: one per line (family, pets, friends)</span></label><textarea id="myWords" spellcheck="false" placeholder="Mom&#10;Dad&#10;Gogo"></textarea></div>
 
     <h4>Pip's voice</h4>

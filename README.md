@@ -12,6 +12,13 @@ and it works offline after the first visit. Progress, stickers and settings stay
 2. Tap the **⋮** menu, then **Install app** (or **Add to Home screen**).
 3. Open **Pip's Garden** from the home screen. Turn the phone sideways.
 
+## Extras
+- **Pip's 5 minutes** (on the garden screen): three short rounds from the three games where she has the most
+  to practise, with a Next button between them.
+- **Arrow Farm, Plan the path**: she lines up arrows first, then presses Go (early coding).
+- **Honey Keys, Spell it**: Pip says a word and she types it with nothing to copy.
+- **Her name in your voice** (Grown-ups corner): record her name once and Pip plays it whenever it says her name.
+
 ## Grown-ups corner
 On the garden screen, press and hold **Grown-ups** for about 2 seconds: progress, her name, Pip's voice,
 which activities appear, and difficulty levels.

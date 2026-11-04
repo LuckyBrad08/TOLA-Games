@@ -26,28 +26,33 @@ ENTER = {
       levels = Object.assign({ count: 1, sums: 1, letters: 1, shapes: 1, patterns: 1 }, store.get("levels", {}));
       goHome();
     },
-    leave() { game = null; stopSpeech(); }
+    leave() { game = null; stopSpeech(); },
+    play(act) { startActivity(act); }
   });''',
 "arrow": '''  Pip.registerGame("arrow", {
     enter() {
       const st = store.get("settings", {});
       settings.enabled = Object.assign({ snack: true, numbers: true, sounds: true, letters: true }, st.enabled || {});
       if (st.sayDir !== undefined) settings.sayDir = st.sayDir;
+      if (st.mode) settings.mode = st.mode;
       level = store.get("level", 1);
+      planLevel = store.get("planLevel", 1);
       interacted = true; gate.hidden = true; // she already clicked to get here
       goStart();
     },
-    leave() { game = null; P = null; clearIdle(); clearHint(); stopSpeech(); }
+    leave() { game = null; P = null; clearIdle(); clearHint(); stopSpeech(); },
+    play(mode) { settings.mode = mode; saveSettings(); renderStart(); startRound(); }
   });''',
 "honey": '''  Pip.registerGame("honey", {
     enter() {
       const st = store.get("settings", {});
       if (st.glow !== undefined) settings.glow = st.glow;
-      levels = Object.assign({ hunt: 1, words: 1, name: 1, mine: 1 }, store.get("levels", {}));
+      levels = Object.assign({ hunt: 1, words: 1, spell: 1, name: 1, mine: 1 }, store.get("levels", {}));
       gate.hidden = true;
       goHome();
     },
-    leave() { goHome(false); }
+    leave() { goHome(false); },
+    play(act) { startRound(act); }
   });''',
 "reading": '''  Pip.registerGame("reading", {
     enter() {
@@ -56,7 +61,8 @@ ENTER = {
       levels = Object.assign({ sounds: 1, build: 1, read: 1, sight: 1 }, store.get("levels", {}));
       goHome();
     },
-    leave() { game = null; stopSpeech(); }
+    leave() { game = null; stopSpeech(); },
+    play(act) { startRound(act); }
   });''',
 }
 
@@ -142,6 +148,14 @@ PHONE_GAME = {
   .pick .emoji { font-size: 50px; }
   .pick span:last-child { font-size: 16px; }
   .how { margin-top: 4px; padding: 8px 16px; font-size: 18px; }
+  .side { gap: 6px; }
+  .plan { width: calc(3 * 68px + 16px); min-height: 44px; padding: 5px; gap: 4px; border-width: 2px; border-radius: 12px; }
+  .plan:empty::before { font-size: 13px; padding: 4px; }
+  .card { width: 32px; height: 32px; border-radius: 8px; }
+  .card svg { width: 20px; height: 20px; }
+  .modes { margin-top: 2px; gap: 8px; }
+  .mode { padding: 6px 14px; font-size: 16px; box-shadow: 0 4px 0 rgba(34, 48, 74, .12); }
+  .mode .emoji { font-size: 20px; }
 }""",
 "honey": """@media (max-height: 520px) {
   .bubble-row { display: none; }
@@ -158,6 +172,10 @@ PHONE_GAME = {
   .art-word { font-size: 26px; }
   .art-word .emoji { font-size: 36px; }
   .art-name { font-size: 22px; }
+  .tiles { grid-template-columns: repeat(auto-fit, 136px); gap: 10px; }
+  .art-spell { font-size: 22px; }
+  .art-spell .emoji { font-size: 30px; }
+  .art-name span { font-size: 14px !important; line-height: 1.25; } /* the \"Ask a grown-up\" message */
 }""",
 "reading": """@media (max-height: 520px) {
   .choices { gap: 14px; padding-bottom: 10px; }
@@ -258,6 +276,7 @@ def build_game(gid, folder):
     n_kd = js.count('window.addEventListener("keydown", e => {')
     js = js.replace('window.addEventListener("keydown", e => {', 'window.addEventListener("keydown", e => {\n    if (host.hidden || Pip.sheetOpen()) return;')
     js = js.replace('window.addEventListener("blur", () => {', 'window.addEventListener("blur", () => {\n    if (host.hidden) return;')
+    js = once(js, "  function finishRound() {\n", "  function finishRound() {\n    if (Pip.roundDone) Pip.roundDone(); // lets Pip's 5 minutes know this round is over\n", f"{gid} round-done hook")
     if gid == "honey":
         js = once(js, "openSheet(true);", "Pip.openGrownups();", "honey name prompt")
     if gid == "reading":
