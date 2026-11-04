@@ -63,7 +63,7 @@ h1 {
 }
 .hub-sub { font-family: var(--font-display); font-weight: 600; font-size: 22px; margin: 6px 0 0; }
 
-.doors { display: grid; grid-template-columns: repeat(5, minmax(0, 220px)); gap: 20px; justify-content: center; width: 100%; margin-top: 2vh; }
+.doors { display: grid; grid-template-columns: repeat(4, minmax(0, 220px)); gap: 18px; justify-content: center; width: 100%; margin-top: 2vh; }
 .door {
   border: 0; border-radius: 34px; padding: 14px 12px 16px; background: var(--paper);
   box-shadow: 0 10px 0 var(--edge), 0 14px 26px rgba(34, 48, 74, .16);
@@ -71,7 +71,7 @@ h1 {
 }
 .door:hover { transform: translateY(-6px) rotate(-1.2deg); }
 .door:active { transform: translateY(5px); }
-.door-art { width: 100%; height: 132px; border-radius: 24px; background: var(--wash); display: grid; place-items: center; font-family: var(--emoji); font-size: 54px; letter-spacing: 4px; }
+.door-art { width: 100%; height: 104px; border-radius: 24px; background: var(--wash); display: grid; place-items: center; font-family: var(--emoji); font-size: 44px; letter-spacing: 2px; white-space: nowrap; overflow: hidden; }
 .door-name { font-family: var(--font-display); font-weight: 800; font-size: 26px; line-height: 1; }
 .door-skills { font-size: 15px; color: var(--ink-soft); text-align: center; line-height: 1.3; min-height: 2.6em; }
 .d-meadow { --wash: #e4f6dc; --edge: #7cc66b; }
@@ -79,6 +79,8 @@ h1 {
 .d-honey { --wash: #fff1c2; --edge: #e9a800; }
 .d-reading { --wash: #dff1fb; --edge: #7fc0e2; }
 .d-trace { --wash: #efe6ff; --edge: #8e5cd9; }
+.d-story { --wash: #dfe3fb; --edge: #3d4a8c; }
+.d-pairs { --wash: #e6f6dc; --edge: #4f9a52; }
 
 .hub-foot { margin-top: auto; display: flex; gap: 16px; align-items: center; flex-wrap: wrap; justify-content: center; }
 .pill { border: 0; border-radius: 999px; padding: 12px 22px; background: var(--paper); box-shadow: 0 6px 0 var(--paper-edge);
@@ -143,18 +145,20 @@ h1 {
 .chip.good { background: #d3f1dc; color: #1c6a39; }
 .prog-note { font-size: 14px; }
 
-@media (max-width: 1100px) { .doors { grid-template-columns: repeat(3, minmax(0, 220px)); } }
+@media (max-width: 900px) { .doors { grid-template-columns: repeat(3, minmax(0, 220px)); } }
 /* Phone held sideways (the S10e gives about 760 x 360): everything on one screen, big enough for small fingers */
 @media (max-height: 520px) {
   .hub-screen { gap: 8px; padding-block: 8px; }
-  .hub-head { margin-top: 0; gap: 12px; }
-  .pip { width: 64px; height: 64px; font-size: 42px; box-shadow: 0 4px 0 var(--paper-edge); }
-  h1 { font-size: 34px; }
-  .hub-sub { font-size: 17px; margin-top: 2px; }
-  .doors { grid-template-columns: repeat(5, minmax(0, 134px)); gap: 10px; margin-top: 4px; }
+  .hub-head { margin-top: 0; gap: 10px; }
+  .pip { width: 50px; height: 50px; font-size: 33px; box-shadow: 0 4px 0 var(--paper-edge); }
+  h1 { font-size: 28px; }
+  .hub-sub { font-size: 15px; margin-top: 0; }
+  .doors { grid-template-columns: repeat(4, minmax(0, 150px)); gap: 8px 12px; margin-top: 0; }
   .door { padding: 8px 8px 10px; border-radius: 24px; box-shadow: 0 7px 0 var(--edge), 0 10px 18px rgba(34, 48, 74, .14); }
-  .door-art { height: 88px; font-size: 34px; letter-spacing: 1px; border-radius: 18px; }
-  .door-name { font-size: 17px; }
+  .door-art { height: 58px; font-size: 28px; letter-spacing: 1px; border-radius: 14px; }
+  .door-name { font-size: 15px; }
+  .door { padding: 6px 6px 7px; gap: 4px; border-radius: 18px; }
+  .hub-screen { gap: 6px; padding-block: 6px; }
   .door-skills { display: none; }
   .pill { padding: 8px 16px; font-size: 18px; }
   .round-btn { width: 48px; height: 48px; font-size: 22px; }
@@ -196,6 +200,14 @@ h1 {
         <span class="door-art">🐌✏️</span><span class="door-name">Snail Trails</span>
         <span class="door-skills">Tracing letters, numbers and her name</span>
       </button>
+      <button class="door d-story" data-game="story" aria-label="Story Time">
+        <span class="door-art">🌙📖</span><span class="door-name">Story Time</span>
+        <span class="door-skills">Listening, story order, feelings, new words</span>
+      </button>
+      <button class="door d-pairs" data-game="pairs" aria-label="Memory Pairs">
+        <span class="door-art">🌼🐸</span><span class="door-name">Memory Pairs</span>
+        <span class="door-skills">Memory and concentration</span>
+      </button>
     </div>
     <div class="hub-foot">
       <button class="pill five" id="fiveBtn"><span class="emoji">🌟</span> Pip's 5 minutes</button>
@@ -219,6 +231,8 @@ h1 {
 <div class="game-host" id="host-honey" hidden></div>
 <div class="game-host" id="host-reading" hidden></div>
 <div class="game-host" id="host-trace" hidden></div>
+<div class="game-host" id="host-story" hidden></div>
+<div class="game-host" id="host-pairs" hidden></div>
 <button class="next-btn" id="nextBtn" hidden></button>
 
 <div class="sheet-wrap" id="sheetWrap" hidden>
@@ -2123,6 +2137,451 @@ h2 { font-family: var(--font-display); font-weight: 800; font-size: clamp(30px, 
 </div>
 
 </template>
+<template id="tpl-story"><style>
+/* Layout: bedtime. A night sky with a moon; each story is a row of picture pages on a warm paper band,
+   with the sentence Pip is reading set large underneath. Deliberately dark, single world. */
+:host {
+  --night: #26305e;
+  --night-low: #3d4a8c;
+  --star: #fff3b0;
+  --paper: #fffaf0;
+  --paper-edge: #e8dcc0;
+  --lamp: #ffc857;
+  --lamp-deep: #e9a520;
+  --ink: #2a2a44;
+  --ink-soft: #5d5a72;
+  --ok: #2c9c5a;
+  --berry: #d9466f;
+  --font-display: "Baloo 2", "Arial Rounded MT Bold", "Trebuchet MS", system-ui, sans-serif;
+  --font-read: "Andika", "Century Gothic", "Segoe UI", system-ui, sans-serif;
+  --emoji: "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif;
+  display: block; height: 100%;
+  font-family: var(--font-read); font-size: 18px; color: var(--ink);
+  background: radial-gradient(circle at 85% 12%, rgba(255, 243, 176, .35) 0 60px, transparent 61px), linear-gradient(180deg, var(--night), var(--night-low));
+  user-select: none; -webkit-user-select: none; -webkit-tap-highlight-color: transparent; touch-action: manipulation;
+  color-scheme: dark;
+}
+*, *::before, *::after { box-sizing: border-box; }
+[hidden] { display: none !important; }
+button { font: inherit; color: inherit; cursor: pointer; }
+button:focus-visible { outline: 4px solid var(--lamp); outline-offset: 4px; }
+.emoji { font-family: var(--emoji); line-height: 1; }
+
+.scenery { position: fixed; inset: 0; pointer-events: none; overflow: hidden; }
+.moon { position: absolute; top: 5%; right: 6%; width: 74px; height: 74px; border-radius: 50%; background: var(--star); box-shadow: 0 0 40px rgba(255, 243, 176, .6); }
+.moon::after { content: ""; position: absolute; width: 74px; height: 74px; border-radius: 50%; background: var(--night); left: 22px; top: -10px; }
+.star { position: absolute; width: 5px; height: 5px; border-radius: 50%; background: var(--star); opacity: .8; animation: twinkle 3s ease-in-out infinite; }
+
+#app { position: relative; height: 100%; }
+.screen {
+  height: 100%; display: flex; flex-direction: column; align-items: center; gap: 12px;
+  padding-block: 14px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  overflow-y: auto;
+}
+.center { justify-content: center; text-align: center; }
+.pip { font-family: var(--emoji); line-height: 1; border: 0; border-radius: 50%; background: var(--paper); display: grid; place-items: center; box-shadow: 0 6px 0 var(--paper-edge); flex: none; }
+h1 { font-family: var(--font-display); font-weight: 800; font-size: clamp(42px, 6vw, 68px); line-height: .95; margin: 0; color: var(--lamp);
+  text-shadow: 0 4px 0 #141a3a, 3px 0 0 #141a3a, -3px 0 0 #141a3a, 0 -3px 0 #141a3a; }
+h2 { font-family: var(--font-display); font-weight: 800; font-size: clamp(30px, 4vw, 44px); margin: 0; line-height: 1.1; color: var(--paper); text-wrap: balance; }
+.pill { border: 0; border-radius: 999px; padding: 12px 22px; background: var(--paper); box-shadow: 0 6px 0 var(--paper-edge);
+  font-family: var(--font-display); font-weight: 800; font-size: 22px; display: inline-flex; align-items: center; gap: 10px; transition: transform .12s; }
+.pill:hover { transform: translateY(-3px); }
+.pill .emoji { font-size: 26px; }
+.pill.soft { background: rgba(255, 250, 240, .16); color: var(--paper); box-shadow: 0 5px 0 rgba(0, 0, 0, .2); }
+.badge { background: var(--lamp); border-radius: 999px; padding: 0 10px; font-size: 18px; }
+.round-btn { width: 60px; height: 60px; border-radius: 50%; border: 0; background: var(--paper); box-shadow: 0 6px 0 var(--paper-edge); font-family: var(--emoji); font-size: 28px; display: grid; place-items: center; flex: none; }
+.paws { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; }
+.paw { width: 40px; height: 40px; border-radius: 50%; background: rgba(255,255,255,.12); border: 3px dashed rgba(255,255,255,.3); display: grid; place-items: center; font-family: var(--emoji); font-size: 20px; }
+.paw.got { background: var(--paper); border: 3px solid var(--paper-edge); animation: pop .4s ease; }
+.paw.gold { background: var(--lamp); border-color: var(--lamp-deep); }
+.btn-row { display: flex; gap: 16px; flex-wrap: wrap; justify-content: center; }
+
+/* Home: a shelf of story books */
+.home-head { display: flex; align-items: center; gap: 18px; margin-top: 1vh; }
+.home-head .pip { width: 100px; height: 100px; font-size: 64px; }
+.home-sub { font-family: var(--font-display); font-weight: 600; font-size: 22px; margin: 6px 0 0; color: var(--paper); }
+.shelf { display: grid; grid-template-columns: repeat(6, minmax(0, 150px)); gap: 16px; justify-content: center; width: 100%; margin-top: 1vh; }
+.cover { position: relative; border: 0; border-radius: 10px 18px 18px 10px; padding: 12px 8px 10px 14px; background: var(--c, #e86f68);
+  box-shadow: inset 6px 0 0 rgba(0, 0, 0, .18), 0 7px 0 rgba(0, 0, 0, .25); display: flex; flex-direction: column; align-items: center; gap: 6px; min-height: 140px; transition: transform .15s; }
+.cover:hover { transform: translateY(-5px) rotate(-1.5deg); }
+.cover .emoji { font-size: 46px; margin-top: 4px; }
+.cover .t { font-family: var(--font-display); font-weight: 800; font-size: 16px; line-height: 1.1; color: #fff; text-align: center; text-shadow: 0 2px 0 rgba(0,0,0,.25); }
+.cover .done { position: absolute; top: -8px; right: -8px; font-size: 26px; }
+.cover.locked { filter: grayscale(.9) brightness(.55); cursor: default; }
+.cover.locked .t::after { content: " 🔒"; }
+.home-foot { margin-top: auto; display: flex; gap: 16px; align-items: center; flex-wrap: wrap; justify-content: center; }
+
+/* Play */
+.topbar { width: 100%; max-width: 1080px; display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.bubble-row { display: flex; align-items: center; gap: 14px; width: 100%; max-width: 1080px; }
+.bubble-row .pip { width: 66px; height: 66px; font-size: 44px; }
+.bubble { position: relative; flex: 1; min-width: 0; background: var(--paper); border-radius: 24px; padding: 12px 22px;
+  font-family: var(--font-display); font-weight: 800; font-size: clamp(22px, 2.8vw, 32px); line-height: 1.15; box-shadow: 0 6px 0 var(--paper-edge); text-wrap: balance; }
+.bubble::before { content: ""; position: absolute; left: -14px; top: 50%; margin-top: -12px; border: 12px solid transparent; border-right: 16px solid var(--paper); border-left: 0; }
+.stage { flex: 1; min-height: 0; width: 100%; max-width: 1080px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px; }
+.scenes { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+.scene { width: clamp(120px, 15vw, 170px); aspect-ratio: 4 / 3; border-radius: 16px; background: var(--paper); box-shadow: 0 6px 0 var(--paper-edge);
+  display: grid; place-items: center; font-family: var(--emoji); font-size: clamp(34px, 4.4vw, 52px); letter-spacing: 2px; position: relative; transition: transform .25s, opacity .25s, box-shadow .25s; opacity: .55; }
+.scene.on { opacity: 1; transform: translateY(-8px) scale(1.06); box-shadow: 0 6px 0 var(--lamp-deep), 0 0 0 6px var(--lamp); }
+.scene.seen { opacity: 1; }
+/* pictures made of three or more emoji get a little smaller so they stay on one line */
+.scene.busy, .slot.filled.busy, .card.busy { font-size: clamp(24px, 3vw, 38px); letter-spacing: 0; }
+.choice .pic.busy { font-size: clamp(32px, 3.8vw, 46px); }
+.scene .n { position: absolute; top: 6px; left: 8px; font-family: var(--font-display); font-weight: 800; font-size: 14px; color: var(--ink-soft); letter-spacing: 0; }
+.sentence { width: 100%; max-width: 900px; min-height: 2.6em; background: var(--paper); border-radius: 18px; padding: 10px 22px; text-align: center;
+  font-family: var(--font-read); font-weight: 700; font-size: clamp(22px, 2.8vw, 32px); line-height: 1.3; box-shadow: 0 6px 0 var(--paper-edge); text-wrap: balance; }
+.choices { display: flex; gap: 18px; justify-content: center; flex-wrap: wrap; width: 100%; }
+.choice { width: clamp(130px, 15vw, 180px); min-height: 130px; border: 0; border-radius: 24px; background: var(--paper);
+  box-shadow: 0 8px 0 var(--paper-edge); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; padding: 12px 10px; transition: transform .15s, opacity .3s; }
+.choice:hover:not(:disabled) { transform: translateY(-5px); }
+.choice:disabled { cursor: default; }
+.choice .pic { font-family: var(--emoji); font-size: clamp(44px, 5.5vw, 64px); line-height: 1; }
+.choice .cap { font-family: var(--font-read); font-weight: 700; font-size: 18px; line-height: 1.2; text-align: center; }
+.choice.wrong { animation: wiggle .45s ease; opacity: .35; }
+.choice.right { box-shadow: 0 8px 0 var(--ok), 0 0 0 6px var(--ok); animation: bounce .6s ease; }
+.choice.hint { animation: glow 1.1s ease-in-out infinite; }
+/* putting the pictures in order */
+.slots { display: flex; gap: 14px; }
+.slot { width: clamp(120px, 15vw, 170px); aspect-ratio: 4 / 3; border-radius: 16px; border: 4px dashed rgba(255, 250, 240, .45); display: grid; place-items: center;
+  font-family: var(--font-display); font-weight: 800; font-size: 20px; color: rgba(255, 250, 240, .7); font-family: var(--font-display); }
+.slot.filled { border: 4px solid var(--ok); background: var(--paper); font-family: var(--emoji); font-size: clamp(34px, 4.4vw, 52px); letter-spacing: 2px; animation: pop .3s ease; }
+.cards { display: flex; gap: 14px; }
+.card { width: clamp(120px, 15vw, 170px); aspect-ratio: 4 / 3; border: 0; border-radius: 16px; background: var(--paper); box-shadow: 0 6px 0 var(--paper-edge);
+  font-family: var(--emoji); font-size: clamp(34px, 4.4vw, 52px); letter-spacing: 2px; transition: transform .15s, opacity .25s; }
+.card:hover:not(:disabled) { transform: translateY(-5px); }
+.card.used { opacity: .15; }
+.card.wrong { animation: wiggle .45s ease; }
+.card.hint { animation: glow 1.1s ease-in-out infinite; }
+
+/* Reward + book */
+.eyebrow { font-family: var(--font-display); font-weight: 800; letter-spacing: .12em; text-transform: uppercase; font-size: 18px; margin: 0; color: rgba(255, 250, 240, .75); }
+.sticker-big { font-family: var(--emoji); font-size: clamp(110px, 17vw, 170px); line-height: 1; width: clamp(170px, 26vw, 250px); aspect-ratio: 1; border-radius: 50%;
+  background: var(--paper); display: grid; place-items: center; border: 8px dashed var(--lamp); animation: sticker .9s cubic-bezier(.2, 1.6, .4, 1) both; }
+.book-head { display: flex; align-items: center; gap: 16px; width: 100%; max-width: 900px; }
+.book-head h2 { flex: 1; }
+.book { width: 100%; max-width: 900px; background: var(--paper); border-radius: 34px; padding: 22px; display: grid; grid-template-columns: repeat(auto-fill, minmax(92px, 1fr)); gap: 14px; }
+.slotb { position: relative; aspect-ratio: 1; border: 0; border-radius: 24px; background: #f2ecdc; display: grid; place-items: center; font-family: var(--emoji); font-size: 54px; line-height: 1; }
+.slotb.have { background: #fff1c2; }
+.slotb.empty span { filter: grayscale(1) brightness(0); opacity: .12; }
+.slotb .n { position: absolute; bottom: 6px; right: 8px; font-family: var(--font-display); font-weight: 800; font-size: 16px; background: var(--lamp); border-radius: 999px; padding: 0 8px; }
+
+.bit { position: fixed; width: 12px; height: 12px; border-radius: 3px; z-index: 7; pointer-events: none; animation: burst .9s ease-out forwards; }
+@keyframes burst { to { transform: translate(var(--dx), var(--dy)) rotate(540deg); opacity: 0; } }
+@keyframes pop { 0% { transform: scale(.5); } 70% { transform: scale(1.12); } 100% { transform: scale(1); } }
+@keyframes wiggle { 0%, 100% { transform: rotate(0); } 25% { transform: rotate(-8deg); } 75% { transform: rotate(8deg); } }
+@keyframes bounce { 0%, 100% { transform: translateY(0); } 35% { transform: translateY(-18px) scale(1.05); } }
+@keyframes glow { 0%, 100% { box-shadow: 0 8px 0 var(--paper-edge), 0 0 0 0 rgba(255, 200, 87, 0); } 50% { box-shadow: 0 8px 0 var(--paper-edge), 0 0 0 10px rgba(255, 200, 87, .8); } }
+@keyframes twinkle { 50% { opacity: .25; } }
+@keyframes sticker { 0% { transform: scale(0) rotate(-30deg); } 100% { transform: scale(1) rotate(0); } }
+
+@media (max-width: 860px) { .shelf { grid-template-columns: repeat(3, minmax(0, 150px)); } }
+/* Phone held sideways (about 760 x 360) */
+@media (max-height: 520px) {
+  .screen { gap: 6px; padding-block: 6px; }
+  .round-btn { width: 44px; height: 44px; font-size: 21px; box-shadow: 0 4px 0 var(--paper-edge); }
+  .paws { gap: 5px; }
+  .paw { width: 28px; height: 28px; font-size: 14px; border-width: 2px; }
+  .bubble-row .pip { width: 44px; height: 44px; font-size: 30px; box-shadow: 0 4px 0 var(--paper-edge); }
+  .bubble { font-size: 18px; padding: 6px 14px; border-radius: 16px; box-shadow: 0 4px 0 var(--paper-edge); }
+  .bubble::before { left: -10px; margin-top: -8px; border-width: 8px; border-right-width: 11px; }
+  h1 { font-size: 30px; }
+  h2 { font-size: 24px; }
+  .home-head { margin-top: 0; gap: 12px; }
+  .home-head .pip { width: 52px; height: 52px; font-size: 34px; box-shadow: 0 4px 0 var(--paper-edge); }
+  .home-sub { font-size: 16px; margin-top: 2px; }
+  .shelf { grid-template-columns: repeat(6, minmax(0, 104px)); gap: 10px; margin-top: 2px; }
+  .cover { min-height: 96px; padding: 6px 6px 6px 10px; gap: 2px; }
+  .cover .emoji { font-size: 30px; margin-top: 0; }
+  .cover .t { font-size: 12px; }
+  .cover .done { font-size: 18px; top: -6px; right: -6px; }
+  .pill { padding: 8px 16px; font-size: 17px; }
+  .pill .emoji { font-size: 22px; }
+  .stage { gap: 6px; }
+  .scenes { gap: 8px; }
+  .scene, .slot, .card { width: 96px; font-size: 28px; border-radius: 12px; }
+  .scene .n { font-size: 11px; top: 3px; left: 5px; }
+  .scene.busy, .slot.filled.busy, .card.busy { font-size: 20px; }
+  .choice .pic.busy { font-size: 28px; }
+  .slot { font-size: 14px; border-width: 3px; }
+  .slot.filled { font-size: 28px; border-width: 3px; }
+  .slots, .cards { gap: 8px; }
+  .sentence { font-size: 18px; padding: 6px 14px; border-radius: 12px; min-height: 2.4em; box-shadow: 0 4px 0 var(--paper-edge); }
+  .choices { gap: 12px; }
+  .choice { width: 128px; min-height: 0; padding: 8px 6px; border-radius: 18px; gap: 4px; box-shadow: 0 6px 0 var(--paper-edge); }
+  .choice .pic { font-size: 38px; }
+  .choice .cap { font-size: 14px; }
+  .sticker-big { width: 120px; font-size: 76px; border-width: 6px; }
+  .eyebrow { font-size: 14px; }
+  .book { padding: 14px; gap: 10px; grid-template-columns: repeat(auto-fill, minmax(72px, 1fr)); }
+  .slotb { font-size: 42px; border-radius: 18px; }
+}
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } }
+</style>
+
+<div class="scenery" aria-hidden="true" id="sky"><div class="moon"></div></div>
+
+<div id="app">
+  <section id="home" class="screen">
+    <div class="home-head">
+      <button class="pip" id="pipHome" aria-label="Pip the panda says hello">🐼</button>
+      <div>
+        <h1>Story Time</h1>
+        <p class="home-sub">Pick a story and listen carefully!</p>
+      </div>
+    </div>
+    <div class="shelf" id="shelf"></div>
+    <div class="home-foot">
+      <button class="pill" id="bookBtn"><span class="emoji">⭐</span> Stickers <span class="badge" id="stickerCount">0</span></button>
+      <button class="pill" id="hubBtn"><span class="emoji">🗺️</span> All games</button>
+    </div>
+  </section>
+
+  <section id="play" class="screen" hidden>
+    <div class="topbar">
+      <button class="round-btn" id="homeBtn" aria-label="Back to the story shelf">🏠</button>
+      <div class="paws" id="paws" aria-label="Progress"></div>
+      <button class="round-btn" id="repeatBtn" aria-label="Hear the question again">🔊</button>
+    </div>
+    <div class="bubble-row">
+      <button class="pip" id="pipPlay" aria-label="Hear it again">🐼</button>
+      <div class="bubble" id="prompt" aria-live="polite"></div>
+    </div>
+    <div class="stage" id="stage"></div>
+  </section>
+
+  <section id="reward" class="screen center" hidden>
+    <p class="eyebrow">The end</p>
+    <div class="paws" id="rewardPaws"></div>
+    <div class="sticker-big" id="newSticker"></div>
+    <h2 id="rewardText"></h2>
+    <div class="btn-row">
+      <button class="pill" id="playAgain"><span class="emoji">📖</span> Another story</button>
+      <button class="pill" id="rewardBook"><span class="emoji">⭐</span> Stickers</button>
+      <button class="pill" id="rewardHome"><span class="emoji">🏠</span> Story shelf</button>
+    </div>
+  </section>
+
+  <section id="book" class="screen" hidden>
+    <div class="book-head">
+      <button class="round-btn" id="bookHome" aria-label="Back to the story shelf">🏠</button>
+      <h2>My sticker book</h2>
+      <span class="badge" id="bookCount" style="font-size:22px;font-family:var(--font-display);font-weight:800"></span>
+    </div>
+    <div class="book" id="bookGrid"></div>
+  </section>
+</div>
+
+</template>
+<template id="tpl-pairs"><style>
+/* Layout: flower pots in a spring garden. Each card's back is a flower; she turns two over at a time
+   looking for a matching pair. Fixed bright colours. */
+:host {
+  --sky: #d9f2ff;
+  --grass: #b7e3a0;
+  --leaf: #4f9a52;
+  --pot: #e07b4f;
+  --pot-deep: #b65a33;
+  --petal: #ffcf3f;
+  --paper: #ffffff;
+  --paper-edge: #d7e6d0;
+  --ink: #26324a;
+  --ink-soft: #55627a;
+  --ok: #2c9c5a;
+  --berry: #d9466f;
+  --font-display: "Baloo 2", "Arial Rounded MT Bold", "Trebuchet MS", system-ui, sans-serif;
+  --font-read: "Andika", "Century Gothic", "Segoe UI", system-ui, sans-serif;
+  --emoji: "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif;
+  display: block; height: 100%;
+  font-family: var(--font-read); font-size: 18px; color: var(--ink);
+  background: linear-gradient(180deg, var(--sky) 0%, #eefaf2 55%, var(--grass) 100%);
+  user-select: none; -webkit-user-select: none; -webkit-tap-highlight-color: transparent; touch-action: manipulation;
+}
+*, *::before, *::after { box-sizing: border-box; }
+[hidden] { display: none !important; }
+button { font: inherit; color: inherit; cursor: pointer; }
+button:focus-visible { outline: 4px solid var(--berry); outline-offset: 4px; }
+.emoji { font-family: var(--emoji); line-height: 1; }
+
+#app { position: relative; height: 100%; }
+.screen {
+  height: 100%; display: flex; flex-direction: column; align-items: center; gap: 12px;
+  padding-block: 14px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  overflow-y: auto;
+}
+.center { justify-content: center; text-align: center; }
+.pip { font-family: var(--emoji); line-height: 1; border: 0; border-radius: 50%; background: var(--paper); display: grid; place-items: center; box-shadow: 0 6px 0 var(--paper-edge); flex: none; }
+h1 { font-family: var(--font-display); font-weight: 800; font-size: clamp(42px, 6vw, 68px); line-height: .95; margin: 0; color: var(--petal);
+  text-shadow: 0 4px 0 var(--pot-deep), 3px 0 0 var(--pot-deep), -3px 0 0 var(--pot-deep), 0 -3px 0 var(--pot-deep); }
+h2 { font-family: var(--font-display); font-weight: 800; font-size: clamp(30px, 4vw, 44px); margin: 0; line-height: 1.1; text-wrap: balance; }
+.pill { border: 0; border-radius: 999px; padding: 12px 22px; background: var(--paper); box-shadow: 0 6px 0 var(--paper-edge);
+  font-family: var(--font-display); font-weight: 800; font-size: 22px; display: inline-flex; align-items: center; gap: 10px; transition: transform .12s; }
+.pill:hover { transform: translateY(-3px); }
+.pill .emoji { font-size: 26px; }
+.badge { background: var(--petal); border-radius: 999px; padding: 0 10px; font-size: 18px; }
+.round-btn { width: 60px; height: 60px; border-radius: 50%; border: 0; background: var(--paper); box-shadow: 0 6px 0 var(--paper-edge); font-family: var(--emoji); font-size: 28px; display: grid; place-items: center; flex: none; }
+.paws { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; }
+.paw { width: 40px; height: 40px; border-radius: 50%; background: rgba(255,255,255,.6); border: 3px dashed rgba(38,50,74,.22); display: grid; place-items: center; font-family: var(--emoji); font-size: 20px; }
+.paw.got { background: var(--paper); border: 3px solid var(--paper-edge); animation: pop .4s ease; }
+.paw.gold { background: var(--petal); border-color: #e9a800; }
+.btn-row { display: flex; gap: 16px; flex-wrap: wrap; justify-content: center; }
+
+/* Home */
+.home-head { display: flex; align-items: center; gap: 18px; margin-top: 2vh; }
+.home-head .pip { width: 104px; height: 104px; font-size: 66px; }
+.home-sub { font-family: var(--font-display); font-weight: 600; font-size: 22px; margin: 6px 0 0; }
+.tiles { display: grid; grid-template-columns: repeat(4, minmax(0, 210px)); gap: 22px; justify-content: center; width: 100%; margin-top: 3vh; }
+.tile { border: 0; border-radius: 34px; padding: 18px 12px 14px; background: var(--paper); box-shadow: 0 10px 0 var(--edge), 0 14px 24px rgba(38,50,74,.14);
+  display: flex; flex-direction: column; align-items: center; gap: 10px; min-height: 220px; transition: transform .15s; }
+.tile:hover { transform: translateY(-6px) rotate(-1.5deg); }
+.tile-art { width: 100%; flex: 1; border-radius: 24px; background: var(--wash); display: flex; align-items: center; justify-content: center; gap: 8px; min-height: 128px; padding: 8px; }
+.mini { width: 54px; height: 66px; border-radius: 12px; background: var(--paper); box-shadow: 0 4px 0 rgba(0,0,0,.12); display: grid; place-items: center; font-family: var(--font-read); font-weight: 700; font-size: 30px; }
+.mini.e { font-family: var(--emoji); font-size: 32px; }
+.tile-name { font-family: var(--font-display); font-weight: 800; font-size: 25px; line-height: 1; }
+.t-animals { --wash: #e4f6dc; --edge: #8ccf9f; }
+.t-letters { --wash: #ffe0e8; --edge: #ef8fa3; }
+.t-numbers { --wash: #fff0c4; --edge: #f0c24a; }
+.t-case { --wash: #e2f1ff; --edge: #8fb4e3; }
+.home-foot { margin-top: auto; display: flex; gap: 16px; align-items: center; flex-wrap: wrap; justify-content: center; }
+
+/* Play */
+.topbar { width: 100%; max-width: 1080px; display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.bubble-row { display: flex; align-items: center; gap: 14px; width: 100%; max-width: 1080px; }
+.bubble-row .pip { width: 66px; height: 66px; font-size: 44px; }
+.bubble { position: relative; flex: 1; min-width: 0; background: var(--paper); border-radius: 24px; padding: 12px 22px;
+  font-family: var(--font-display); font-weight: 800; font-size: clamp(22px, 2.8vw, 32px); line-height: 1.15; box-shadow: 0 6px 0 var(--paper-edge); text-wrap: balance; }
+.bubble::before { content: ""; position: absolute; left: -14px; top: 50%; margin-top: -12px; border: 12px solid transparent; border-right: 16px solid var(--paper); border-left: 0; }
+.board { flex: 1; min-height: 0; display: grid; grid-template-columns: repeat(var(--cols), var(--cw)); gap: 14px; align-content: center; justify-content: center;
+  --cw: min(130px, calc((100vh - 260px) / var(--rows) * .8)); }
+.mcard { position: relative; display: block; width: var(--cw); aspect-ratio: 4 / 5; border: 0; padding: 0; background: none; perspective: 600px; }
+/* the card's two faces size themselves from the card (a button does not pass its height down to children) */
+.mcard .in { position: absolute; inset: 0; transform-style: preserve-3d; transition: transform .35s ease; }
+.mcard.up .in, .mcard.matched .in { transform: rotateY(180deg); }
+.mcard .face, .mcard .back { position: absolute; inset: 0; border-radius: 16px; backface-visibility: hidden; -webkit-backface-visibility: hidden; display: grid; place-items: center; }
+.mcard .back { background: radial-gradient(circle at 50% 50%, #fff6c9 0 22%, transparent 23%), var(--leaf);
+  box-shadow: 0 6px 0 #357a39, inset 0 0 0 4px rgba(255,255,255,.35); font-family: var(--emoji); font-size: calc(var(--cw) * .38); }
+.mcard .face { background: var(--paper); box-shadow: 0 6px 0 var(--paper-edge); transform: rotateY(180deg); }
+.mcard.matched .face { box-shadow: 0 6px 0 var(--ok), 0 0 0 4px var(--ok); }
+.mcard.miss .face { animation: wiggle .45s ease; }
+.f-pic { font-family: var(--emoji); font-size: calc(var(--cw) * .52); line-height: 1; }
+.f-letter { font-family: var(--font-read); font-weight: 700; font-size: calc(var(--cw) * .55); line-height: 1; color: var(--berry); }
+.f-letter.small { color: #2f6fb3; }
+.f-num { font-family: var(--font-display); font-weight: 800; font-size: calc(var(--cw) * .55); line-height: 1; }
+.f-dots { display: grid; grid-template-columns: repeat(var(--dc), 1fr); gap: calc(var(--cw) * .05); padding: 12%; }
+.f-dots i { width: calc(var(--cw) * .13); aspect-ratio: 1; border-radius: 50%; background: var(--pot); }
+
+/* Reward + book */
+.eyebrow { font-family: var(--font-display); font-weight: 800; letter-spacing: .12em; text-transform: uppercase; font-size: 18px; margin: 0; color: var(--ink-soft); }
+.sticker-big { font-family: var(--emoji); font-size: clamp(110px, 17vw, 170px); line-height: 1; width: clamp(170px, 26vw, 250px); aspect-ratio: 1; border-radius: 50%;
+  background: var(--paper); display: grid; place-items: center; border: 8px dashed var(--petal); animation: sticker .9s cubic-bezier(.2, 1.6, .4, 1) both; }
+.book-head { display: flex; align-items: center; gap: 16px; width: 100%; max-width: 900px; }
+.book-head h2 { flex: 1; }
+.book { width: 100%; max-width: 900px; background: var(--paper); border-radius: 34px; padding: 22px; box-shadow: 0 10px 0 var(--paper-edge);
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(92px, 1fr)); gap: 14px; }
+.slotb { position: relative; aspect-ratio: 1; border: 0; border-radius: 24px; background: #eef6ee; display: grid; place-items: center; font-family: var(--emoji); font-size: 54px; line-height: 1; }
+.slotb.have { background: #fff4d0; }
+.slotb.empty span { filter: grayscale(1) brightness(0); opacity: .12; }
+.slotb .n { position: absolute; bottom: 6px; right: 8px; font-family: var(--font-display); font-weight: 800; font-size: 16px; background: var(--petal); border-radius: 999px; padding: 0 8px; }
+
+.bit { position: fixed; width: 12px; height: 12px; border-radius: 3px; z-index: 7; pointer-events: none; animation: burst .9s ease-out forwards; }
+@keyframes burst { to { transform: translate(var(--dx), var(--dy)) rotate(540deg); opacity: 0; } }
+@keyframes pop { 0% { transform: scale(.5); } 70% { transform: scale(1.12); } 100% { transform: scale(1); } }
+@keyframes wiggle { 0%, 100% { transform: rotate(0); } 25% { transform: rotate(-6deg); } 75% { transform: rotate(6deg); } }
+@keyframes sticker { 0% { transform: scale(0) rotate(-30deg); } 100% { transform: scale(1) rotate(0); } }
+
+@media (max-width: 860px) { .tiles { grid-template-columns: repeat(2, minmax(0, 210px)); } }
+/* Phone held sideways (about 760 x 360) */
+@media (max-height: 520px) {
+  .screen { gap: 6px; padding-block: 6px; }
+  .round-btn { width: 44px; height: 44px; font-size: 21px; box-shadow: 0 4px 0 var(--paper-edge); }
+  .paws { gap: 5px; }
+  .paw { width: 28px; height: 28px; font-size: 14px; border-width: 2px; }
+  .bubble-row .pip { width: 40px; height: 40px; font-size: 27px; box-shadow: 0 4px 0 var(--paper-edge); }
+  .bubble { font-size: 17px; padding: 5px 14px; border-radius: 14px; box-shadow: 0 4px 0 var(--paper-edge); }
+  .bubble::before { left: -10px; margin-top: -8px; border-width: 8px; border-right-width: 11px; }
+  h1 { font-size: 34px; }
+  h2 { font-size: 24px; }
+  .home-head { margin-top: 0; gap: 12px; }
+  .home-head .pip { width: 64px; height: 64px; font-size: 42px; box-shadow: 0 4px 0 var(--paper-edge); }
+  .home-sub { font-size: 17px; margin-top: 2px; }
+  .tiles { margin-top: 4px; gap: 12px; grid-template-columns: repeat(4, minmax(0, 170px)); }
+  .tile { min-height: 0; padding: 8px; border-radius: 24px; gap: 6px; box-shadow: 0 7px 0 var(--edge), 0 10px 18px rgba(0, 0, 0, .12); }
+  .tile-art { min-height: 92px; border-radius: 18px; gap: 6px; }
+  .mini { width: 40px; height: 50px; font-size: 22px; border-radius: 9px; }
+  .mini.e { font-size: 24px; }
+  .tile-name { font-size: 18px; }
+  .pill { padding: 8px 16px; font-size: 17px; }
+  .pill .emoji { font-size: 22px; }
+  .board { gap: 8px; --cw: min(96px, calc((100vh - 120px) / var(--rows) * .78)); }
+  .mcard .face, .mcard .back { border-radius: 11px; }
+  .sticker-big { width: 120px; font-size: 76px; border-width: 6px; }
+  .eyebrow { font-size: 14px; }
+  .book { padding: 14px; gap: 10px; grid-template-columns: repeat(auto-fill, minmax(72px, 1fr)); }
+  .slotb { font-size: 42px; border-radius: 18px; }
+}
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } }
+</style>
+
+<div id="app">
+  <section id="home" class="screen">
+    <div class="home-head">
+      <button class="pip" id="pipHome" aria-label="Pip the panda says hello">🐼</button>
+      <div>
+        <h1>Memory Pairs</h1>
+        <p class="home-sub">Turn over two flowers. Can you find the pairs?</p>
+      </div>
+    </div>
+    <div class="tiles">
+      <button class="tile t-animals" data-act="animals" aria-label="Animal pairs"><div class="tile-art"><span class="mini e">🐸</span><span class="mini e">🐸</span></div><span class="tile-name">Animals</span></button>
+      <button class="tile t-letters" data-act="letters" aria-label="Letters and animals"><div class="tile-art"><span class="mini">B</span><span class="mini e">🐻</span></div><span class="tile-name">Letters</span></button>
+      <button class="tile t-numbers" data-act="numbers" aria-label="Numbers and dots"><div class="tile-art"><span class="mini">3</span><span class="mini e" style="font-size:16px">🔴🔴🔴</span></div><span class="tile-name">Numbers</span></button>
+      <button class="tile t-case" data-act="case" aria-label="Big and small letters"><div class="tile-art"><span class="mini" style="color:#d9466f">D</span><span class="mini" style="color:#2f6fb3">d</span></div><span class="tile-name">Big &amp; small</span></button>
+    </div>
+    <div class="home-foot">
+      <button class="pill" id="bookBtn"><span class="emoji">⭐</span> Stickers <span class="badge" id="stickerCount">0</span></button>
+      <button class="pill" id="hubBtn"><span class="emoji">🗺️</span> All games</button>
+    </div>
+  </section>
+
+  <section id="play" class="screen" hidden>
+    <div class="topbar">
+      <button class="round-btn" id="homeBtn" aria-label="Back to Memory Pairs">🏠</button>
+      <div class="paws" id="paws" aria-label="Pairs found"></div>
+      <button class="round-btn" id="repeatBtn" aria-label="Hear it again">🔊</button>
+    </div>
+    <div class="bubble-row">
+      <button class="pip" id="pipPlay" aria-label="Hear it again">🐼</button>
+      <div class="bubble" id="prompt" aria-live="polite"></div>
+    </div>
+    <div class="board" id="board"></div>
+  </section>
+
+  <section id="reward" class="screen center" hidden>
+    <p class="eyebrow">All pairs found</p>
+    <div class="paws" id="rewardPaws"></div>
+    <div class="sticker-big" id="newSticker"></div>
+    <h2 id="rewardText"></h2>
+    <div class="btn-row">
+      <button class="pill" id="playAgain"><span class="emoji">🔁</span> Play again</button>
+      <button class="pill" id="rewardBook"><span class="emoji">⭐</span> Stickers</button>
+      <button class="pill" id="rewardHome"><span class="emoji">🏠</span> Home</button>
+    </div>
+  </section>
+
+  <section id="book" class="screen" hidden>
+    <div class="book-head">
+      <button class="round-btn" id="bookHome" aria-label="Back to Memory Pairs">🏠</button>
+      <h2>My sticker book</h2>
+      <span class="badge" id="bookCount" style="font-size:22px;font-family:var(--font-display);font-weight:800"></span>
+    </div>
+    <div class="book" id="bookGrid"></div>
+  </section>
+</div>
+
+</template>
 <script>
 /* Pip core: the things every game shares (storage, voice, learning memory, play time, stickers, switching games) */
 (() => {
@@ -2132,7 +2591,7 @@ h2 { font-family: var(--font-display); font-weight: 800; font-size: clamp(30px, 
     set(k, v) { try { localStorage.setItem(prefix + k, JSON.stringify(v)); } catch (e) {} }
   });
   // Each game keeps the storage keys it used as a separate file, so progress from the offline copies carries over
-  const PREFIX = { meadow: "meadow.", arrow: "arrowfarm.", honey: "honeykeys.", reading: "readingnest.", trace: "snailtrails." };
+  const PREFIX = { meadow: "meadow.", arrow: "arrowfarm.", honey: "honeykeys.", reading: "readingnest.", trace: "snailtrails.", story: "storytime.", pairs: "memorypairs." };
   const GAME_IDS = Object.keys(PREFIX);
   const shared = mkStore("pip.");
   const storeFor = id => mkStore(PREFIX[id]);
@@ -4886,6 +5345,644 @@ Pip.defineGame("trace", (root, host) => {
 });
 </script>
 <script>
+
+Pip.defineGame("story", (root, host) => {
+  "use strict";
+  const $ = s => root.querySelector(s);
+  const rand = n => Math.floor(Math.random() * n);
+  const pick = a => a[rand(a.length)];
+  const shuffle = a => { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = rand(i + 1); [a[i], a[j]] = [a[j], a[i]]; } return a; };
+  const wait = ms => new Promise(r => setTimeout(r, ms));
+  const cap = s => s.charAt(0).toUpperCase() + s.slice(1);
+  const article = w => (/^[aeiou]/i.test(w) ? "an " : "a ") + w;
+  const esc = s => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;");
+  const reduceMotion = window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const { say, sayQueue, stopSpeech } = Pip;
+  const store = Pip.storeFor("story");
+  const memory = Pip.memoryFor("story");
+  const stickers = Pip.stickers;
+  let level = store.get("level", 1);
+  const STICKERS = [
+    ["🦁", "lion"], ["🐯", "tiger"], ["🐻", "bear"], ["🐼", "panda"], ["🐨", "koala"], ["🐵", "monkey"],
+    ["🦊", "fox"], ["🐰", "bunny"], ["🐸", "frog"], ["🐷", "pig"], ["🐮", "cow"], ["🐔", "hen"],
+    ["🐧", "penguin"], ["🦉", "owl"], ["🦄", "unicorn"], ["🐙", "octopus"], ["🐳", "whale"], ["🐬", "dolphin"],
+    ["🦒", "giraffe"], ["🦓", "zebra"], ["🐘", "elephant"], ["🦛", "hippo"], ["🐢", "turtle"], ["🦜", "parrot"]
+  ];
+
+  /* ---------- The stories ----------
+     {N} is her name (from the Grown-ups corner). Each question lists its options with the right one first
+     (they are shuffled on screen), the scene that holds the answer (for "listen again" help), and what Pip
+     says when she gets it. Every story also gets a "put the pictures in order" question. */
+  const STORIES = [
+    { id: "carrots", lvl: 1, c: "#e8836b", title: "Bunny's Carrots", cover: "🐰",
+      scenes: [["🐰🌅", "Bunny woke up very hungry."], ["🥕❓", "She hopped to the garden, but her carrots were gone!"], ["🦊🧺", "Then Fox came along with a basket. He had picked the carrots, so they could eat them together."]],
+      qs: [{ t: "who", q: "Who had the carrots?", o: [["🦊", "Fox"], ["🐻", "Bear"], ["🐭", "Mouse"]], s: 2, yes: "Yes! Fox had picked the carrots." },
+           { t: "feel", q: "How did Bunny feel when her carrots were gone?", o: [["😢", "sad"], ["😀", "happy"], ["😴", "sleepy"]], s: 1, yes: "Yes! Bunny felt sad, because she was hungry and the carrots were gone." }] },
+    { id: "puddle", lvl: 1, c: "#5b9bd5", title: "Duck's Puddle", cover: "🦆",
+      scenes: [["🌧️🏡", "It rained all night on the farm."], ["🦆💧", "In the morning, Duck found a big puddle."], ["🦆💦", "Duck splashed and splashed. What fun!"]],
+      qs: [{ t: "what", q: "What did Duck find?", o: [["💧", "a puddle"], ["⚽", "a ball"], ["🎂", "a cake"]], s: 1, yes: "Yes! Duck found a big puddle." },
+           { t: "feel", q: "How did Duck feel, splashing in the puddle?", o: [["😀", "happy"], ["😨", "scared"], ["😢", "sad"]], s: 2, yes: "Yes! Duck was happy. Splashing is fun!" }] },
+    { id: "kitten", lvl: 1, c: "#8e6fd6", title: "{N} and the Kitten", cover: "🐱",
+      scenes: [["👧🌳", "{N} was playing in the park."], ["🐱🌲", "She heard a little meow. A kitten was stuck up a tree!"], ["👧🐱💛", "{N} helped the kitten climb down safely."]],
+      qs: [{ t: "where", q: "Where was the kitten stuck?", o: [["🌲", "up a tree"], ["🏠", "on a roof"], ["🚗", "in a car"]], s: 1, yes: "Yes! The kitten was stuck up a tree." },
+           { t: "feel", q: "How did the kitten feel, stuck up the tree?", o: [["😨", "scared"], ["😀", "happy"], ["😴", "sleepy"]], s: 1, yes: "Yes! The kitten was scared, until {N} helped." }] },
+    { id: "birthday", lvl: 1, c: "#e05c8a", title: "Bear's Birthday", cover: "🐻",
+      scenes: [["🐻🎂", "It was Bear's birthday."], ["🐰🐭🦊🎁", "His friends came with presents."], ["🐻🎈", "Bear blew out the candles, and everyone sang."]],
+      qs: [{ t: "what", q: "What special day was it?", o: [["🎂", "a birthday"], ["🌧️", "a rainy day"], ["🏫", "a school day"]], s: 0, yes: "Yes! It was Bear's birthday." },
+           { t: "who", q: "Who brought presents?", o: [["🐰🐭", "his friends"], ["👮", "a police officer"], ["🐟", "a fish"]], s: 1, yes: "Yes! Bear's friends brought presents." }] },
+    { id: "ball", lvl: 2, c: "#d99a2b", title: "The Lost Ball", cover: "⚽",
+      scenes: [["🐶⚽", "Puppy loved his red ball."], ["⚽🌾", "One day he kicked it too hard, and it rolled into the long grass."], ["🐶🔍", "Puppy looked and looked, but he could not find it."], ["🐭⚽", "Then Mouse found it and pushed it back to him. Thank you, Mouse!"]],
+      qs: [{ t: "who", q: "Who found the ball?", o: [["🐭", "Mouse"], ["🦊", "Fox"], ["🐻", "Bear"]], s: 3, yes: "Yes! Mouse found the ball." },
+           { t: "why", q: "Why couldn't Puppy find his ball?", o: [["🌾", "It was in the long grass"], ["🛏️", "It was under his bed"], ["🎈", "It flew away"]], s: 1, yes: "Yes! The ball rolled into the long grass." },
+           { t: "feel", q: "How did Puppy feel when he couldn't find it?", o: [["😟", "worried"], ["😄", "happy"], ["😴", "sleepy"]], s: 2, yes: "Yes! Puppy felt worried." }] },
+    { id: "race", lvl: 2, c: "#4caf7a", title: "Snail's Race", cover: "🐌",
+      scenes: [["🐌🐇", "Snail and Rabbit had a race to the big tree."], ["🐇💨😴", "Rabbit ran very fast, then stopped for a nap."], ["🐌➡️", "Snail kept going, slowly, slowly."], ["🐌🏆", "Snail reached the tree first and won the race!"]],
+      qs: [{ t: "who", q: "Who won the race?", o: [["🐌", "Snail"], ["🐇", "Rabbit"], ["🐢", "Tortoise"]], s: 3, yes: "Yes! Snail won the race." },
+           { t: "why", q: "Why did Rabbit lose?", o: [["😴", "He stopped for a nap"], ["🐢", "He was too slow"], ["🗺️", "He got lost"]], s: 1, yes: "Yes! Rabbit stopped for a nap, and Snail kept going." },
+           { t: "feel", q: "How did Snail feel at the end?", o: [["😊", "proud"], ["😢", "sad"], ["😠", "cross"]], s: 3, yes: "Yes! Snail felt proud, because he never gave up." }] },
+    { id: "garden", lvl: 2, c: "#7fb347", title: "{N}'s Garden", cover: "🌻",
+      scenes: [["👧🌱", "{N} planted a tiny seed in a pot."], ["💧☀️", "Every day she gave it water and put it in the sun."], ["🌿", "Slowly, the seed grew into a little green plant."], ["🌻😄", "One morning, a big yellow flower opened!"]],
+      qs: [{ t: "what", q: "What did {N} plant?", o: [["🌱", "a seed"], ["🍎", "an apple"], ["🥚", "an egg"]], s: 0, yes: "Yes! {N} planted a tiny seed." },
+           { t: "why", q: "Why did the seed grow?", o: [["💧☀️", "She gave it water and sun"], ["🌑", "She kept it in the dark"], ["❄️", "It was very cold"]], s: 1, yes: "Yes! Plants need water and sun to grow." },
+           { t: "what", q: "What colour was the flower?", o: [["🌻", "yellow"], ["🌹", "red"], ["🪻", "purple"]], s: 3, yes: "Yes! It was a big yellow flower." }] },
+    { id: "owl", lvl: 2, c: "#6c7bd1", title: "Owl Can't Sleep", cover: "🦉",
+      scenes: [["🦉☀️", "It was daytime, and Owl wanted to sleep."], ["🐦🎶", "But the birds were singing very loudly."], ["🦉😫", "Owl was exhausted. Exhausted means very, very tired."], ["🌙🦉", "When night came, the birds went to sleep, and Owl woke up happy."]],
+      qs: [{ t: "why", q: "Why couldn't Owl sleep?", o: [["🎶", "The birds were singing loudly"], ["🌧️", "It was raining"], ["🍽️", "He was hungry"]], s: 1, yes: "Yes! The birds were too noisy." },
+           { t: "word", q: "Owl was exhausted. What does exhausted mean?", o: [["😫", "very, very tired"], ["😄", "very happy"], ["🍽️", "very hungry"]], s: 2, yes: "Yes! Exhausted means very, very tired." },
+           { t: "what", q: "When does Owl like to be awake?", o: [["🌙", "at night"], ["🌅", "in the morning"], ["☀️", "at lunch time"]], s: 3, yes: "Yes! Owls are awake at night." }] },
+    { id: "bath", lvl: 3, c: "#8a9bb0", title: "Elephant's Bath", cover: "🐘",
+      scenes: [["🐘☀️", "It was a hot day, and Elephant was dusty."], ["🐘🏞️", "She walked down to the river to have a bath."], ["🐘💦", "She filled her trunk with water and sprayed it over her back."], ["🐒💦", "Monkey was sitting nearby, and he got wet too!"], ["🐒😂🐘", "Monkey laughed. That was enormous fun! Enormous means very, very big."]],
+      qs: [{ t: "why", q: "Why did Elephant go to the river?", o: [["🛁", "To have a bath"], ["🍌", "To find food"], ["😴", "To have a sleep"]], s: 1, yes: "Yes! She was dusty, so she went for a bath." },
+           { t: "who", q: "Who got wet too?", o: [["🐒", "Monkey"], ["🦁", "Lion"], ["🦒", "Giraffe"]], s: 3, yes: "Yes! Monkey got wet too." },
+           { t: "word", q: "What does enormous mean?", o: [["🐘", "very, very big"], ["🐭", "very small"], ["🐆", "very fast"]], s: 4, yes: "Yes! Enormous means very, very big." },
+           { t: "next", q: "What might Elephant and Monkey do next?", o: [["💦", "Splash and play together"], ["❄️", "Build a snowman"], ["🚀", "Fly to the moon"]], s: 4, yes: "Yes! They might splash and play together." }] },
+    { id: "storm", lvl: 3, c: "#4f6d8f", title: "The Big Storm", cover: "⛈️",
+      scenes: [["🐔🌤️", "Hen was looking for seeds when the sky went dark."], ["⛈️", "A big storm was coming!"], ["🐔💨", "Hen ran to the barn as fast as she could."], ["🐮🐷🐑", "Inside, Cow, Pig and Sheep made space for her."], ["🐔😊", "They all stayed warm and dry until the storm was over."]],
+      qs: [{ t: "why", q: "Why did Hen run to the barn?", o: [["⛈️", "A storm was coming"], ["🕒", "She was late"], ["🐛", "She chased a worm"]], s: 1, yes: "Yes! A big storm was coming." },
+           { t: "feel", q: "How did Hen feel when the sky went dark?", o: [["😨", "scared"], ["😄", "happy"], ["😴", "sleepy"]], s: 0, yes: "Yes! Storms can feel scary." },
+           { t: "what", q: "How did her friends help?", o: [["🏠", "They made space for her"], ["☂️", "They gave her an umbrella"], ["🎶", "They sang a song"]], s: 3, yes: "Yes! They made space for her in the barn." },
+           { t: "next", q: "What might they do when the storm is over?", o: [["🌈", "Go outside again"], ["🛏️", "Sleep for a whole year"], ["🏊", "Swim in the sea"]], s: 4, yes: "Yes! They can go outside again." }] },
+    { id: "picnic", lvl: 3, c: "#d7704f", title: "{N}'s Picnic", cover: "🧺",
+      scenes: [["👧🧺", "{N} packed a picnic: bread, apples and juice."], ["👧🌳", "She sat under a big tree with her teddy."], ["🐜🍞", "Soon, some tiny ants marched up to the bread."], ["👧🍞🐜", "{N} broke off a little piece and gave it to the ants."], ["🐜💛", "The ants carried it home, and {N} finished her lunch."]],
+      qs: [{ t: "what", q: "What did the ants want?", o: [["🍞", "the bread"], ["🧃", "the juice"], ["🧸", "the teddy"]], s: 2, yes: "Yes! The ants wanted the bread." },
+           { t: "why", q: "Why did {N} give the ants some bread?", o: [["💛", "To be kind and share"], ["😝", "She didn't like bread"], ["🗑️", "It was dirty"]], s: 3, yes: "Yes! She was kind and shared." },
+           { t: "feel", q: "How do you think the ants felt?", o: [["😊", "happy"], ["😠", "cross"], ["😢", "sad"]], s: 4, yes: "Yes! The ants were happy to get some bread." },
+           { t: "next", q: "What might {N} do after her picnic?", o: [["⚽", "Play in the park"], ["🚀", "Fly to the moon"], ["🦖", "Ride a dinosaur"]], s: 4, yes: "Yes! She might play in the park." }] },
+    { id: "tortoise", lvl: 3, c: "#5aa58a", title: "Tortoise's Friend", cover: "🐢",
+      scenes: [["🐢🌿", "Tortoise lived by the pond, all on his own."], ["🐢😔", "He felt lonely. Lonely means sad because you have no one to play with."], ["🐸💦", "One day, Frog jumped out of the water. Hello! Do you want to play?"], ["🐢🐸", "They played hide and seek all afternoon."], ["🐢😄🐸", "Now Tortoise and Frog meet at the pond every day."]],
+      qs: [{ t: "word", q: "Tortoise felt lonely. What does lonely mean?", o: [["😔", "sad, with no one to play with"], ["😴", "very sleepy"], ["😠", "very cross"]], s: 1, yes: "Yes! Lonely means sad because you have no one to play with." },
+           { t: "who", q: "Who became Tortoise's friend?", o: [["🐸", "Frog"], ["🐟", "Fish"], ["🦆", "Duck"]], s: 2, yes: "Yes! Frog became his friend." },
+           { t: "feel", q: "How does Tortoise feel now?", o: [["😄", "happy"], ["😔", "lonely"], ["😨", "scared"]], s: 4, yes: "Yes! Now he has a friend, he feels happy." },
+           { t: "next", q: "What might they do tomorrow?", o: [["🐢🐸", "Play together again"], ["🏔️", "Climb a mountain"], ["🚂", "Drive a train"]], s: 4, yes: "Yes! They might play together again." }] }
+  ];
+  const Q_NAMES = { who: "who", what: "what", where: "where", order: "story order", feel: "feelings", why: "why", word: "story words", next: "what next" };
+
+  // her name goes into the stories; until a grown-up adds it, the girl in the story is called Mia
+  const busy = pic => ((pic.match(/\p{Extended_Pictographic}/gu) || []).length >= 3 ? " busy" : "");
+  const heroName = () => Pip.settings.first.trim() || "Mia";
+  const fill = s => s.replace(/\{N\}/g, heroName());
+
+  /* ---------- Sound effects ---------- */
+  let actx = null;
+  function tone(f, t, d, type = "triangle", v = 0.15) {
+    v *= window.speechSynthesis && speechSynthesis.speaking ? 0.3 : 0.6;
+    const o = actx.createOscillator(), g = actx.createGain();
+    o.type = type; o.frequency.value = f;
+    g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(v, t + 0.02); g.gain.exponentialRampToValueAtTime(0.0001, t + d);
+    o.connect(g).connect(actx.destination); o.start(t); o.stop(t + d + 0.05);
+  }
+  function sfx(kind) {
+    if (!Pip.settings.sfx) return;
+    try {
+      actx = actx || new (window.AudioContext || window.webkitAudioContext)();
+      if (actx.state === "suspended") actx.resume();
+      const now = actx.currentTime;
+      if (kind === "page") tone(880, now, 0.08, "sine", 0.08);
+      else if (kind === "yes") [523, 659, 784].forEach((f, i) => tone(f, now + i * 0.09, 0.2));
+      else if (kind === "no") { tone(330, now, 0.15, "sine", 0.12); tone(262, now + 0.14, 0.22, "sine", 0.12); }
+      else if (kind === "fanfare") [523, 659, 784, 1047].forEach((f, i) => tone(f, now + i * 0.13, i === 3 ? 0.6 : 0.16));
+    } catch (e) {}
+  }
+  function confetti(el) {
+    if (reduceMotion || !el) return;
+    const r = el.getBoundingClientRect(), cx = r.left + r.width / 2, cy = r.top + r.height / 2;
+    for (let i = 0; i < 22; i++) {
+      const b = document.createElement("span"); b.className = "bit";
+      const a = Math.random() * Math.PI * 2, d = 80 + Math.random() * 120;
+      b.style.left = cx + "px"; b.style.top = cy + "px"; b.style.background = pick(["#ffc857", "#fff3b0", "#e05c8a", "#5b9bd5", "#4caf7a"]);
+      b.style.setProperty("--dx", Math.cos(a) * d + "px"); b.style.setProperty("--dy", Math.sin(a) * d - 40 + "px");
+      root.appendChild(b); setTimeout(() => b.remove(), 950);
+    }
+  }
+  // a few twinkling stars
+  for (let i = 0; i < 18; i++) {
+    const s = document.createElement("span"); s.className = "star";
+    s.style.left = rand(100) + "%"; s.style.top = rand(55) + "%"; s.style.animationDelay = -rand(30) / 10 + "s";
+    $("#sky").appendChild(s);
+  }
+
+  /* ---------- Screens ---------- */
+  const screens = ["home", "play", "reward", "book"];
+  function show(id) { screens.forEach(s => { $("#" + s).hidden = s !== id; }); }
+  let interacted = false;
+  window.addEventListener("pointerdown", () => { interacted = true; }, { once: true });
+  const heard = () => store.get("heard", {});
+
+  function renderHome() {
+    const done = heard();
+    $("#shelf").innerHTML = STORIES.map(st => {
+      const locked = st.lvl > level;
+      return `<button class="cover${locked ? " locked" : ""}" data-id="${st.id}" style="--c:${st.c}" aria-label="${esc(fill(st.title))}${locked ? " (not yet)" : ""}">`
+        + `<span class="emoji">${st.cover}</span><span class="t">${esc(fill(st.title))}</span>${done[st.id] ? `<span class="done emoji">⭐</span>` : ""}</button>`;
+    }).join("");
+    $("#stickerCount").textContent = Object.keys(stickers).length;
+  }
+  function goHome(speak = true) { game = null; stopSpeech(); renderHome(); show("home"); if (speak && interacted) say("Which story shall we read?"); }
+  $("#shelf").addEventListener("click", e => {
+    const b = e.target.closest(".cover"); if (!b) return;
+    const st = STORIES.find(s => s.id === b.dataset.id);
+    if (st.lvl > level) { say("That story is for later. Read some of the others first!"); return; }
+    startStory(st);
+  });
+  $("#shelf").addEventListener("mouseover", e => {
+    const b = e.target.closest(".cover");
+    if (b && interacted && !game && b.dataset.id !== lastHover) { lastHover = b.dataset.id; say(fill(STORIES.find(s => s.id === b.dataset.id).title)); }
+  });
+  let lastHover = null;
+  $("#pipHome").addEventListener("click", () => say("Pick a story! I'll read it to you, then I'll ask you some questions. Listen carefully!"));
+
+  /* ---------- A story ---------- */
+  let game = null;
+  function startStory(st) {
+    stopSpeech();
+    // questions: the story's own (fewer on short stories), plus putting three pictures in order
+    const qs = st.qs.slice(0, st.lvl === 1 ? 2 : 3).concat(st.lvl === 3 ? st.qs.slice(3) : []);
+    qs.splice(1, 0, { t: "order" });
+    game = { st, qs, i: 0, results: [], good: 0, phase: "listen" };
+    show("play");
+    renderPaws($("#paws"), game.results, qs.length);
+    readStory();
+  }
+  function pickStory() {
+    const open = STORIES.filter(s => s.lvl <= level);
+    const id = memory.pick(open.map(s => "story:" + s.id), 1)[0].slice(6);
+    return STORIES.find(s => s.id === id);
+  }
+
+  function renderPaws(el, results, n) {
+    el.innerHTML = Array.from({ length: n }, (_, i) => {
+      const r = results[i];
+      return `<span class="paw${r ? " got" : ""}${r === "gold" ? " gold" : ""}">${r ? "🐾" : ""}</span>`;
+    }).join("");
+  }
+
+  async function readStory() {
+    const g = game, st = g.st;
+    g.phase = "listen";
+    $("#prompt").textContent = `${fill(st.title)}. Listen!`;
+    $("#stage").innerHTML = `<div class="scenes">${st.scenes.map((sc, i) => `<div class="scene${busy(sc[0])}" data-i="${i}"><span class="n">${i + 1}</span>${sc[0]}</div>`).join("")}</div>`
+      + `<div class="sentence" id="sentence"></div>`;
+    const cards = [...root.querySelectorAll(".scene")];
+    const light = i => () => {
+      cards.forEach((c, j) => { c.classList.toggle("on", i === j); if (j < i) c.classList.add("seen"); });
+      $("#sentence").textContent = fill(st.scenes[i][1]);
+      sfx("page");
+    };
+    stopSpeech();
+    const tok = await sayQueue([`${fill(st.title)}.`]);
+    if (g !== game || !tok) return;
+    // each page stays up at least as long as it takes to read aloud, even if the voice can't speak
+    for (let i = 0; i < st.scenes.length; i++) {
+      const text = fill(st.scenes[i][1]), t0 = Date.now();
+      light(i)();
+      const ok = await sayQueue([text]);
+      if (g !== game || !ok) return;
+      const min = 1200 + text.length * 45;
+      if (Date.now() - t0 < min) await wait(min - (Date.now() - t0));
+      if (g !== game || g.phase !== "listen") return;
+    }
+    cards.forEach(c => { c.classList.remove("on"); c.classList.add("seen"); });
+    await wait(500);
+    if (g !== game) return;
+    await say("The end! Now, let's see what you remember.");
+    if (g !== game || g.phase !== "listen") return;
+    askQuestion();
+  }
+
+  function askQuestion() {
+    const g = game, st = g.st, q = g.qs[g.i];
+    g.phase = "ask";
+    g.q = { def: q, wrongs: 0, locked: false };
+    if (q.t === "order") return askOrder();
+    const opts = shuffle(q.o.map((o, i) => ({ pic: o[0], cap: fill(o[1]), correct: i === 0 })));
+    $("#prompt").textContent = fill(q.q);
+    $("#stage").innerHTML = `<div class="choices" id="choices"></div><button class="pill soft" id="again"><span class="emoji">🔁</span> Hear the story again</button>`;
+    opts.forEach(o => {
+      const b = document.createElement("button");
+      b.className = "choice"; b.dataset.right = o.correct ? "1" : "0";
+      b.innerHTML = `<span class="pic${busy(o.pic)}">${o.pic}</span><span class="cap">${esc(o.cap)}</span>`;
+      b.setAttribute("aria-label", o.cap);
+      b.addEventListener("click", () => answer(b, o));
+      $("#choices").appendChild(b);
+    });
+    $("#again").addEventListener("click", () => { g.helpedAt = g.i; readStory(); });
+    say(fill(q.q));
+  }
+
+  async function answer(btn, o) {
+    const g = game, q = g.q;
+    if (!g || q.locked || btn.disabled) return;
+    if (o.correct) {
+      q.locked = true;
+      root.querySelectorAll(".choice").forEach(b => { b.classList.remove("hint"); if (b !== btn) b.disabled = true; });
+      btn.classList.add("right"); sfx("yes"); confetti(btn);
+      await done(q.wrongs === 0, fill(q.def.yes));
+    } else {
+      q.wrongs++;
+      btn.disabled = true; btn.classList.add("wrong"); sfx("no");
+      const scene = fill(g.st.scenes[q.def.s][1]);
+      if (q.wrongs >= 2) {
+        root.querySelector('.choice[data-right="1"]').classList.add("hint");
+        say(`Listen: ${scene}`);
+      } else say(`Hmm, not ${o.cap}. Listen again: ${scene}`);
+    }
+  }
+
+  // put three of the story's pictures in order: what happened first, next and last
+  function askOrder() {
+    const g = game, sc = g.st.scenes;
+    const idx = sc.length === 3 ? [0, 1, 2] : [0, Math.floor(sc.length / 2), sc.length - 1];
+    g.q.need = 0; g.q.idx = idx; g.q.wrongHere = 0;
+    $("#prompt").textContent = "Put the pictures in order!";
+    $("#stage").innerHTML = `<div class="slots">${["first", "next", "last"].map(w => `<div class="slot">${w}</div>`).join("")}</div>`
+      + `<div class="cards">${shuffle(idx.map((s, k) => ({ s, k }))).map(c => `<button class="card${busy(sc[c.s][0])}" data-k="${c.k}" aria-label="picture ${c.s + 1}">${sc[c.s][0]}</button>`).join("")}</div>`;
+    root.querySelectorAll(".card").forEach(b => b.addEventListener("click", () => orderTap(b)));
+    say("Put the pictures in order. What happened first?");
+  }
+  async function orderTap(b) {
+    const g = game, q = g.q;
+    if (!g || q.locked || b.disabled) return;
+    const k = +b.dataset.k;
+    if (k === q.need) {
+      b.disabled = true; b.classList.add("used"); b.classList.remove("hint");
+      const slot = root.querySelectorAll(".slot")[k];
+      slot.className = "slot filled" + busy(g.st.scenes[q.idx[k]][0]); slot.textContent = g.st.scenes[q.idx[k]][0];
+      sfx("page"); q.need++; q.wrongHere = 0;
+      if (q.need < 3) { say(q.need === 1 ? "Yes! What happened next?" : "And what happened last?"); return; }
+      q.locked = true; sfx("yes"); confetti($(".slots"));
+      const told = q.idx.map(s => fill(g.st.scenes[s][1]));
+      await done(q.wrongs === 0, `Yes! First, ${told[0]} Next, ${told[1]} Last, ${told[2]}`);
+    } else {
+      q.wrongs++; q.wrongHere++;
+      b.classList.remove("wrong"); void b.offsetWidth; b.classList.add("wrong"); sfx("no");
+      if (q.wrongHere >= 2) { root.querySelector(`.card[data-k="${q.need}"]`).classList.add("hint"); say(`Listen: ${fill(g.st.scenes[q.idx[q.need]][1])}`); }
+      else say(["Hmm. What happened at the very start?", "Not that one. What happened in the middle?", "What happened at the end?"][q.need]);
+    }
+  }
+
+  async function done(first, line) {
+    const g = game, t = g.qs[g.i].t;
+    first = first && g.helpedAt !== g.i; // hearing the story again is fine, but then it isn't first time
+    memory.result("q:" + t, first);
+    if (first) g.good++;
+    g.results[g.i] = first ? "gold" : "plain";
+    renderPaws($("#paws"), g.results, g.qs.length);
+    $("#prompt").textContent = "Well done!";
+    await say(line);
+    if (g !== game) return;
+    await wait(600);
+    if (g !== game) return;
+    g.i++;
+    if (g.i >= g.qs.length) finishRound(); else askQuestion();
+  }
+
+  function finishRound() {
+    if (Pip.roundDone) Pip.roundDone(); // lets Pip's 5 minutes know this round is over
+    const g = game, share = g.good / g.qs.length, before = level;
+    memory.result("story:" + g.st.id, share >= 0.75);
+    const h = heard(); h[g.st.id] = true; store.set("heard", h);
+    // a new shelf of stories opens when she understands most of a story at her level
+    if (share >= 0.75 && g.st.lvl >= level) level = Math.min(3, level + 1);
+    store.set("level", level);
+    const missing = STICKERS.filter(s => !stickers[s[0]]);
+    const s = pick(missing.length ? missing : STICKERS);
+    stickers[s[0]] = (stickers[s[0]] || 0) + 1;
+    Pip.saveStickers();
+    renderPaws($("#rewardPaws"), g.results, g.qs.length);
+    const box = $("#newSticker");
+    box.textContent = s[0]; box.style.animation = "none"; void box.offsetWidth; box.style.animation = "";
+    $("#rewardText").textContent = `You got ${article(s[1])} sticker!`;
+    show("reward"); sfx("fanfare");
+    const more = level > before ? " And there are new stories on the shelf!" : "";
+    say(`Great listening! You got ${article(s[1])} sticker!${more}`);
+  }
+
+  /* ---------- Buttons ---------- */
+  $("#homeBtn").addEventListener("click", () => goHome());
+  const replay = () => {
+    if (!game) return;
+    if (game.phase === "listen") readStory();
+    else if (game.q && !game.q.locked) say(game.qs[game.i].t === "order" ? "Put the pictures in order." : fill(game.qs[game.i].q));
+  };
+  $("#repeatBtn").addEventListener("click", replay);
+  $("#pipPlay").addEventListener("click", replay);
+  $("#playAgain").addEventListener("click", () => startStory(pickStory()));
+  $("#rewardHome").addEventListener("click", () => goHome());
+  $("#rewardBook").addEventListener("click", openBook);
+  $("#bookBtn").addEventListener("click", openBook);
+  $("#bookHome").addEventListener("click", () => goHome());
+  $("#hubBtn").addEventListener("click", () => Pip.goHub());
+
+  function openBook() {
+    game = null; stopSpeech();
+    const have = STICKERS.filter(s => stickers[s[0]]).length;
+    $("#bookCount").textContent = `${have} / ${STICKERS.length}`;
+    $("#bookGrid").innerHTML = STICKERS.map(([e, n]) => {
+      const c = stickers[e] || 0;
+      return `<button class="slotb ${c ? "have" : "empty"}" data-name="${n}" data-have="${c ? 1 : 0}" aria-label="${c ? n : "Sticker not found yet"}"><span>${e}</span>${c > 1 ? `<span class="n">×${c}</span>` : ""}</button>`;
+    }).join("");
+    show("book");
+    if (interacted) say(have ? `You have ${have} sticker${have === 1 ? "" : "s"}!` : "Listen to a story to win your first sticker!");
+  }
+  $("#bookGrid").addEventListener("click", e => {
+    const b = e.target.closest(".slotb"); if (!b) return;
+    say(b.dataset.have === "1" ? cap(b.dataset.name) + "!" : "Keep playing to find this one!");
+  });
+
+  Pip.registerProgress("story", [
+    { label: "Understanding stories", prefix: "q:", ids: Object.keys(Q_NAMES), show: t => Q_NAMES[t] },
+    { label: "Stories heard", prefix: "story:", ids: STORIES.map(s => s.id), show: id => fill(STORIES.find(s => s.id === id).title) }
+  ]);
+  Pip.registerGame("story", {
+    enter() { level = store.get("level", 1); goHome(); },
+    leave() { game = null; stopSpeech(); },
+    play() { startStory(pickStory()); }
+  });
+  renderHome();
+});
+</script>
+<script>
+
+Pip.defineGame("pairs", (root, host) => {
+  "use strict";
+  const $ = s => root.querySelector(s);
+  const rand = n => Math.floor(Math.random() * n);
+  const pick = a => a[rand(a.length)];
+  const shuffle = a => { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = rand(i + 1); [a[i], a[j]] = [a[j], a[i]]; } return a; };
+  const wait = ms => new Promise(r => setTimeout(r, ms));
+  const cap = s => s.charAt(0).toUpperCase() + s.slice(1);
+  const article = w => (/^[aeiou]/i.test(w) ? "an " : "a ") + w;
+  const reduceMotion = window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const { say, sayQueue, stopSpeech } = Pip;
+  const store = Pip.storeFor("pairs");
+  const memory = Pip.memoryFor("pairs");
+  const stickers = Pip.stickers;
+  const ACTS = ["animals", "letters", "numbers", "case"];
+  const settings = { enabled: { animals: true, letters: true, numbers: true, case: true } };
+  let levels = { animals: 1, letters: 1, numbers: 1, case: 1 };
+  const L = c => (c.toLowerCase() === "a" ? "ay" : c.toUpperCase());
+  const NUM_WORDS = ["zero", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten"];
+
+  /* ---------- Decks ----------
+     Each pair is two cards that belong together. id: what the learning memory tracks. */
+  const ANIMALS = [["🐶", "dog"], ["🐱", "cat"], ["🐷", "pig"], ["🐮", "cow"], ["🐸", "frog"], ["🦁", "lion"], ["🐵", "monkey"], ["🐰", "bunny"],
+    ["🐻", "bear"], ["🦊", "fox"], ["🐼", "panda"], ["🐨", "koala"], ["🐯", "tiger"], ["🐧", "penguin"], ["🦉", "owl"], ["🐢", "turtle"]];
+  const LETTER_PICS = { A: ["🐜", "ant"], B: ["🐻", "bear"], C: ["🐱", "cat"], D: ["🐶", "dog"], E: ["🐘", "elephant"], F: ["🦊", "fox"], G: ["🐐", "goat"],
+    H: ["🐴", "horse"], K: ["🦘", "kangaroo"], L: ["🦁", "lion"], M: ["🐒", "monkey"], O: ["🐙", "octopus"], P: ["🐷", "pig"], R: ["🐰", "rabbit"],
+    S: ["🐍", "snake"], T: ["🐯", "tiger"], W: ["🐳", "whale"], Z: ["🦓", "zebra"] };
+  // big and small letters: the ones that look different first, the easily mixed-up ones (b d p q) at level 3
+  const CASE_SETS = { 1: "ABDEFGHRT", 2: "ABDEFGHLMNQRTY", 3: "ABDEFGHLMNQRTYBDPQ" };
+  const PAIRS = { 1: 3, 2: 4, 3: 6 };
+  const GRID = { 3: [3, 2], 4: [4, 2], 6: [4, 3] }; // columns, rows
+
+  function makePairs(act, lv) {
+    const n = PAIRS[lv];
+    if (act === "animals") {
+      return memory.pick(ANIMALS.map(a => "pic:" + a[1]), n).map(id => {
+        const [e, name] = ANIMALS.find(a => a[1] === id.slice(4));
+        const card = { html: `<span class="f-pic">${e}</span>`, say: cap(name) };
+        return { id, a: card, b: { ...card }, match: `Two ${name === "bunny" ? "bunnies" : name + "s"}!` };
+      });
+    }
+    if (act === "letters") {
+      return memory.pick(Object.keys(LETTER_PICS).map(c => "abc:" + c), n).map(id => {
+        const c = id.slice(4), [e, name] = LETTER_PICS[c];
+        return { id, a: { html: `<span class="f-letter">${c}</span>`, say: L(c) }, b: { html: `<span class="f-pic">${e}</span>`, say: cap(name) }, match: `${L(c)} is for ${name}!` };
+      });
+    }
+    if (act === "numbers") {
+      const max = { 1: 5, 2: 8, 3: 10 }[lv];
+      return memory.pick(Array.from({ length: max }, (_, i) => "num:" + (i + 1)), n).map(id => {
+        const k = +id.slice(4);
+        const dots = `<span class="f-dots" style="--dc:${k > 4 ? (k > 6 ? 5 : 3) : 2}">${"<i></i>".repeat(k)}</span>`;
+        return { id, a: { html: `<span class="f-num">${k}</span>`, say: NUM_WORDS[k] }, b: { html: dots, say: null }, match: `${cap(NUM_WORDS[k])}! ${cap(NUM_WORDS[k])} dots!` };
+      });
+    }
+    const letters = [...new Set(CASE_SETS[lv])];
+    return memory.pick(letters.map(c => "case:" + c), n).map(id => {
+      const c = id.slice(5);
+      return { id, a: { html: `<span class="f-letter">${c}</span>`, say: `big ${L(c)}` }, b: { html: `<span class="f-letter small">${c.toLowerCase()}</span>`, say: `small ${L(c)}` }, match: `Big ${L(c)} and small ${L(c)}!` };
+    });
+  }
+
+  /* ---------- Sound effects ---------- */
+  let actx = null;
+  function tone(f, t, d, type = "triangle", v = 0.15) {
+    v *= window.speechSynthesis && speechSynthesis.speaking ? 0.3 : 0.6;
+    const o = actx.createOscillator(), g = actx.createGain();
+    o.type = type; o.frequency.value = f;
+    g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(v, t + 0.02); g.gain.exponentialRampToValueAtTime(0.0001, t + d);
+    o.connect(g).connect(actx.destination); o.start(t); o.stop(t + d + 0.05);
+  }
+  function sfx(kind) {
+    if (!Pip.settings.sfx) return;
+    try {
+      actx = actx || new (window.AudioContext || window.webkitAudioContext)();
+      if (actx.state === "suspended") actx.resume();
+      const now = actx.currentTime;
+      if (kind === "flip") tone(700, now, 0.07, "sine", 0.08);
+      else if (kind === "yes") [523, 659, 784].forEach((f, i) => tone(f, now + i * 0.09, 0.2));
+      else if (kind === "no") tone(262, now, 0.2, "sine", 0.1);
+      else if (kind === "fanfare") [523, 659, 784, 1047].forEach((f, i) => tone(f, now + i * 0.13, i === 3 ? 0.6 : 0.16));
+    } catch (e) {}
+  }
+  function confetti(el) {
+    if (reduceMotion || !el) return;
+    const r = el.getBoundingClientRect(), cx = r.left + r.width / 2, cy = r.top + r.height / 2;
+    for (let i = 0; i < 18; i++) {
+      const b = document.createElement("span"); b.className = "bit";
+      const a = Math.random() * Math.PI * 2, d = 60 + Math.random() * 100;
+      b.style.left = cx + "px"; b.style.top = cy + "px"; b.style.background = pick(["#ffcf3f", "#e07b4f", "#4f9a52", "#d9466f", "#2f6fb3"]);
+      b.style.setProperty("--dx", Math.cos(a) * d + "px"); b.style.setProperty("--dy", Math.sin(a) * d - 40 + "px");
+      root.appendChild(b); setTimeout(() => b.remove(), 950);
+    }
+  }
+
+  /* ---------- Screens ---------- */
+  const screens = ["home", "play", "reward", "book"];
+  function show(id) { screens.forEach(s => { $("#" + s).hidden = s !== id; }); }
+  let interacted = false;
+  window.addEventListener("pointerdown", () => { interacted = true; }, { once: true });
+  function renderHome() {
+    root.querySelectorAll(".tile").forEach(t => { t.hidden = settings.enabled[t.dataset.act] === false; });
+    $("#stickerCount").textContent = Object.keys(stickers).length;
+  }
+  function goHome(speak = true) { game = null; stopSpeech(); renderHome(); show("home"); if (speak && interacted) say("Which cards shall we play?"); }
+  const tileWords = { animals: "Animal pairs!", letters: "Letters and animals!", numbers: "Numbers and dots!", case: "Big and small letters!" };
+  root.querySelectorAll(".tile").forEach(t => {
+    t.addEventListener("mouseenter", () => { if (interacted && !game) say(tileWords[t.dataset.act]); });
+    t.addEventListener("click", () => startRound(t.dataset.act));
+  });
+  $("#pipHome").addEventListener("click", () => say("Turn over two flowers. If they belong together, you keep them! Try to remember where everything is."));
+
+  /* ---------- A board ---------- */
+  let game = null;
+  const INTRO = { animals: "Find the two animals that are the same!", letters: "Find each letter and the animal it starts!", numbers: "Find each number and its dots!", case: "Find each big letter and its small letter!" };
+
+  function renderPaws(el, results, n) {
+    el.innerHTML = Array.from({ length: n }, (_, i) => {
+      const r = results[i];
+      return `<span class="paw${r ? " got" : ""}${r === "gold" ? " gold" : ""}">${r ? "🐾" : ""}</span>`;
+    }).join("");
+  }
+
+  function startRound(act) {
+    stopSpeech();
+    const lv = levels[act], pairs = makePairs(act, lv);
+    // two cards per pair; "seen" remembers which cards she has already turned over at least once
+    const cards = shuffle(pairs.flatMap((p, i) => [{ pair: i, side: "a" }, { pair: i, side: "b" }])).map((c, k) => ({ ...c, k, seen: false, done: false }));
+    game = { act, level: lv, pairs, cards, open: [], busy: false, found: 0, misses: pairs.map(() => 0), results: [] };
+    const [cols, rows] = GRID[pairs.length];
+    const board = $("#board");
+    board.style.setProperty("--cols", cols); board.style.setProperty("--rows", rows);
+    board.innerHTML = cards.map(c => `<button class="mcard" data-k="${c.k}" aria-label="Card ${c.k + 1}"><span class="in"><span class="back">🌼</span><span class="face">${pairs[c.pair][c.side].html}</span></span></button>`).join("");
+    show("play");
+    renderPaws($("#paws"), game.results, pairs.length);
+    $("#prompt").textContent = INTRO[act];
+    say(INTRO[act]);
+  }
+
+  $("#board").addEventListener("click", e => {
+    const b = e.target.closest(".mcard"); if (!b || !game) return;
+    flip(game.cards[+b.dataset.k], b);
+  });
+
+  async function flip(c, el) {
+    const g = game;
+    if (g.busy || c.done || g.open.includes(c)) return;
+    el.classList.add("up"); sfx("flip");
+    const face = g.pairs[c.pair][c.side];
+    if (face.say) say(face.say);
+    g.open.push(c);
+    if (g.open.length < 2) return;
+    const [x, y] = g.open;
+    g.busy = true;
+    if (x.pair === y.pair) {
+      // a pair: keep both cards turned over
+      x.done = y.done = true;
+      const els = [x, y].map(cc => root.querySelector(`.mcard[data-k="${cc.k}"]`));
+      els.forEach(e2 => { e2.classList.remove("up"); e2.classList.add("matched"); });
+      sfx("yes"); confetti(els[1]);
+      const clean = g.misses[x.pair] === 0;
+      memory.result(g.pairs[x.pair].id, clean);
+      g.results[g.found] = clean ? "gold" : "plain";
+      g.found++;
+      renderPaws($("#paws"), g.results, g.pairs.length);
+      x.seen = y.seen = true; g.open = [];
+      await wait(350);
+      await say(g.pairs[x.pair].match);
+      if (g !== game) return;
+      g.busy = false;
+      if (g.found === g.pairs.length) finishRound();
+      return;
+    }
+    // not a pair. If she had already seen where the first card's partner was, that's a chance missed.
+    // (The second card may be new to her, so it doesn't count against her.)
+    const partner = g.cards.find(cc => cc.pair === x.pair && cc !== x);
+    if (partner.seen) g.misses[x.pair]++;
+    x.seen = y.seen = true;
+    await wait(1200);
+    if (g !== game) return;
+    [x, y].forEach(cc => root.querySelector(`.mcard[data-k="${cc.k}"]`).classList.remove("up"));
+    g.open = []; g.busy = false;
+  }
+
+  function finishRound() {
+    if (Pip.roundDone) Pip.roundDone(); // lets Pip's 5 minutes know this round is over
+    const g = game, before = levels[g.act];
+    const missed = g.misses.reduce((a, b) => a + b, 0);
+    // levels: 3 pairs, then 4, then 6. Remembering well moves up; lots of missed chances moves down.
+    if (missed <= 1) levels[g.act] = Math.min(3, before + 1);
+    else if (missed >= g.pairs.length + 2) levels[g.act] = Math.max(1, before - 1);
+    store.set("levels", levels);
+    const missing = STICKERS.filter(s => !stickers[s[0]]);
+    const s = pick(missing.length ? missing : STICKERS);
+    stickers[s[0]] = (stickers[s[0]] || 0) + 1;
+    Pip.saveStickers();
+    renderPaws($("#rewardPaws"), g.results, g.pairs.length);
+    const box = $("#newSticker");
+    box.textContent = s[0]; box.style.animation = "none"; void box.offsetWidth; box.style.animation = "";
+    $("#rewardText").textContent = `You got ${article(s[1])} sticker!`;
+    show("reward"); sfx("fanfare");
+    const more = levels[g.act] > before ? " Next time there will be more cards!" : "";
+    say(`What a good memory! You got ${article(s[1])} sticker!${more}`);
+  }
+
+  const STICKERS = [
+    ["🦁", "lion"], ["🐯", "tiger"], ["🐻", "bear"], ["🐼", "panda"], ["🐨", "koala"], ["🐵", "monkey"],
+    ["🦊", "fox"], ["🐰", "bunny"], ["🐸", "frog"], ["🐷", "pig"], ["🐮", "cow"], ["🐔", "hen"],
+    ["🐧", "penguin"], ["🦉", "owl"], ["🦄", "unicorn"], ["🐙", "octopus"], ["🐳", "whale"], ["🐬", "dolphin"],
+    ["🦒", "giraffe"], ["🦓", "zebra"], ["🐘", "elephant"], ["🦛", "hippo"], ["🐢", "turtle"], ["🦜", "parrot"]
+  ];
+
+  /* ---------- Buttons ---------- */
+  $("#homeBtn").addEventListener("click", () => goHome());
+  const replay = () => { if (game) say(INTRO[game.act]); };
+  $("#repeatBtn").addEventListener("click", replay);
+  $("#pipPlay").addEventListener("click", replay);
+  $("#playAgain").addEventListener("click", () => { if (game) startRound(game.act); });
+  $("#rewardHome").addEventListener("click", () => goHome());
+  $("#rewardBook").addEventListener("click", openBook);
+  $("#bookBtn").addEventListener("click", openBook);
+  $("#bookHome").addEventListener("click", () => goHome());
+  $("#hubBtn").addEventListener("click", () => Pip.goHub());
+
+  function openBook() {
+    game = null; stopSpeech();
+    const have = STICKERS.filter(s => stickers[s[0]]).length;
+    $("#bookCount").textContent = `${have} / ${STICKERS.length}`;
+    $("#bookGrid").innerHTML = STICKERS.map(([e, n]) => {
+      const c = stickers[e] || 0;
+      return `<button class="slotb ${c ? "have" : "empty"}" data-name="${n}" data-have="${c ? 1 : 0}" aria-label="${c ? n : "Sticker not found yet"}"><span>${e}</span>${c > 1 ? `<span class="n">×${c}</span>` : ""}</button>`;
+    }).join("");
+    show("book");
+    if (interacted) say(have ? `You have ${have} sticker${have === 1 ? "" : "s"}!` : "Find all the pairs to win your first sticker!");
+  }
+  $("#bookGrid").addEventListener("click", e => {
+    const b = e.target.closest(".slotb"); if (!b) return;
+    say(b.dataset.have === "1" ? cap(b.dataset.name) + "!" : "Keep playing to find this one!");
+  });
+
+  Pip.registerProgress("pairs", [
+    { label: "Animal pairs", prefix: "pic:", ids: ANIMALS.map(a => a[1]) },
+    { label: "Letters and animals", prefix: "abc:", ids: Object.keys(LETTER_PICS), show: c => `${c} ${LETTER_PICS[c][0]}` },
+    { label: "Numbers and dots", prefix: "num:", ids: ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10"] },
+    { label: "Big and small letters", prefix: "case:", ids: [...new Set(CASE_SETS[3])], show: c => c + c.toLowerCase() }
+  ]);
+  Pip.registerGame("pairs", {
+    enter() {
+      const st = store.get("settings", {});
+      settings.enabled = Object.assign({ animals: true, letters: true, numbers: true, case: true }, st.enabled || {});
+      levels = Object.assign({ animals: 1, letters: 1, numbers: 1, case: 1 }, store.get("levels", {}));
+      goHome();
+    },
+    leave() { game = null; stopSpeech(); },
+    play(act) { startRound(act); }
+  });
+  renderHome();
+});
+</script>
+<script>
 /* Hub: the garden home screen, the shared sticker book and the one Grown-ups corner */
 (() => {
   "use strict";
@@ -4904,12 +6001,14 @@ Pip.defineGame("trace", (root, host) => {
   const GAMES = {
     meadow: { name: "Animal Meadow", acts: [["count", "Counting (to 10, then to 20)"], ["sums", "Sums (more or less, adding, taking away, making 10)"], ["letters", "Letters"], ["shapes", "Shapes and colours"], ["patterns", "Patterns"]], levels: "levels", maxLevel: { count: 4, sums: 4 } },
     arrow: { name: "Arrow Farm", acts: [["snack", "Snack time"], ["numbers", "Number path"], ["sounds", "Who says moo?"], ["letters", "Letter path"]], level: "level",
-      extraLevels: [["planLevel", "Plan the path"]],
+      levelLabel: "Hop around", extraLevels: [["planLevel", "Plan the path"]],
       extras: [["sayDir", "Say the direction on every step (\"Up!\", \"Left!\")", true]] },
     honey: { name: "Honey Keys", acts: [], levels: "levels", levelNames: { hunt: "Letter hunt", words: "Animal words", spell: "Spell it", name: "My name", mine: "My words" },
       extras: [["glow", "Always light up the next key (turn off once she knows the keyboard a bit)", false]] },
     reading: { name: "Reading Nest", acts: [["sounds", "First sounds"], ["build", "Build a word"], ["read", "Read it!"], ["sight", "Little words"]], levels: "levels" },
-    trace: { name: "Snail Trails", acts: [["big", "Big letters"], ["small", "Small letters"], ["numbers", "Numbers"], ["name", "Writing her name"]], levels: "levels" }
+    trace: { name: "Snail Trails", acts: [["big", "Big letters"], ["small", "Small letters"], ["numbers", "Numbers"], ["name", "Writing her name"]], levels: "levels" },
+    story: { name: "Story Time", acts: [], level: "level", levelLabel: "Story shelf (level 2 and 3 add longer stories)" },
+    pairs: { name: "Memory Pairs", acts: [["animals", "Animal pairs"], ["letters", "Letters and animals"], ["numbers", "Numbers and dots"], ["case", "Big and small letters"]], levels: "levels" }
   };
 
   let interacted = false;
@@ -4919,7 +6018,7 @@ Pip.defineGame("trace", (root, host) => {
   function renderHub() { $("#hubStickerCount").textContent = Object.keys(stickers).length; show("hubHome"); }
   Pip.onHub = () => { endSession(); renderHub(); if (interacted) say("Which game shall we play?"); };
 
-  const doorWords = { meadow: "Animal Meadow!", arrow: "Arrow Farm!", honey: "Honey Keys!", reading: "Reading Nest!", trace: "Snail Trails!" };
+  const doorWords = { meadow: "Animal Meadow!", arrow: "Arrow Farm!", honey: "Honey Keys!", reading: "Reading Nest!", trace: "Snail Trails!", story: "Story Time!", pairs: "Memory Pairs!" };
   document.querySelectorAll(".door").forEach(d => {
     d.addEventListener("mouseenter", () => { if (interacted && !Pip.activeGame()) say(doorWords[d.dataset.game]); });
     d.addEventListener("click", () => Pip.openGame(d.dataset.game));
@@ -5020,7 +6119,7 @@ Pip.defineGame("trace", (root, host) => {
     for (const [id, g] of Object.entries(GAMES)) {
       const st = Pip.storeFor(id);
       let rows;
-      if (g.level) rows = [["Hop around", st.get("level", 1)], ...(g.extraLevels || []).map(([k, n]) => [n, st.get(k, 1)])];
+      if (g.level) rows = [[g.levelLabel || "All", st.get("level", 1)], ...(g.extraLevels || []).map(([k, n]) => [n, st.get(k, 1)])];
       else {
         const lv = st.get("levels", {});
         const names = g.levelNames || Object.fromEntries(g.acts);
@@ -5101,7 +6200,9 @@ Pip.defineGame("trace", (root, host) => {
     ["arrow", "hop", "Arrow Farm", ["sound:", "num:", "abc:", "dir:"]], ["arrow", "plan", "Plan the path", ["plan:"]],
     ["honey", "hunt", "Letter hunt", ["key:"]], ["honey", "words", "Animal words", ["word:"]], ["honey", "spell", "Spell it", ["spell:"]], ["honey", "name", "Typing your name", ["name:"]],
     ["reading", "sounds", "First sounds", ["snd:"]], ["reading", "build", "Build a word", ["word:"]], ["reading", "read", "Read it", ["read:"]], ["reading", "sight", "Little words", ["sight:"]],
-    ["trace", "big", "Big letters", ["up:"]], ["trace", "small", "Small letters", ["low:"]], ["trace", "numbers", "Writing numbers", ["num:"]], ["trace", "name", "Writing your name", ["name:"]]
+    ["trace", "big", "Big letters", ["up:"]], ["trace", "small", "Small letters", ["low:"]], ["trace", "numbers", "Writing numbers", ["num:"]], ["trace", "name", "Writing your name", ["name:"]],
+    ["story", "story", "Story time", ["q:"]],
+    ["pairs", "animals", "Animal pairs", ["pic:"]], ["pairs", "letters", "Letter pairs", ["abc:"]], ["pairs", "numbers", "Number pairs", ["num:"]], ["pairs", "case", "Big and small pairs", ["case:"]]
   ];
   function needScore(gid, prefixes) {
     const now = Date.now();

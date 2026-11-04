@@ -4,9 +4,9 @@ import os, re, sys
 # PIP_SOURCE: folder holding the four game folders and learning-garden/ (defaults to this session's layout)
 HOME = os.environ.get("PIP_SOURCE", "/home/user/")
 SRC = HOME + "learning-garden/src/"
-GAMES = [("meadow", "animal-meadow"), ("arrow", "arrow-farm"), ("honey", "honey-keys"), ("reading", "reading-nest"), ("trace", "snail-trails")]
+GAMES = [("meadow", "animal-meadow"), ("arrow", "arrow-farm"), ("honey", "honey-keys"), ("reading", "reading-nest"), ("trace", "snail-trails"), ("story", "story-time"), ("pairs", "memory-pairs")]
 # games written for the shared Pip core from the start: included as they are, with no conversion
-NATIVE = {"trace"}
+NATIVE = {"trace", "story", "pairs"}
 
 def once(s, old, new, what):
     n = s.count(old)

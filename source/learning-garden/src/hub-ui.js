@@ -16,12 +16,14 @@
   const GAMES = {
     meadow: { name: "Animal Meadow", acts: [["count", "Counting (to 10, then to 20)"], ["sums", "Sums (more or less, adding, taking away, making 10)"], ["letters", "Letters"], ["shapes", "Shapes and colours"], ["patterns", "Patterns"]], levels: "levels", maxLevel: { count: 4, sums: 4 } },
     arrow: { name: "Arrow Farm", acts: [["snack", "Snack time"], ["numbers", "Number path"], ["sounds", "Who says moo?"], ["letters", "Letter path"]], level: "level",
-      extraLevels: [["planLevel", "Plan the path"]],
+      levelLabel: "Hop around", extraLevels: [["planLevel", "Plan the path"]],
       extras: [["sayDir", "Say the direction on every step (\"Up!\", \"Left!\")", true]] },
     honey: { name: "Honey Keys", acts: [], levels: "levels", levelNames: { hunt: "Letter hunt", words: "Animal words", spell: "Spell it", name: "My name", mine: "My words" },
       extras: [["glow", "Always light up the next key (turn off once she knows the keyboard a bit)", false]] },
     reading: { name: "Reading Nest", acts: [["sounds", "First sounds"], ["build", "Build a word"], ["read", "Read it!"], ["sight", "Little words"]], levels: "levels" },
-    trace: { name: "Snail Trails", acts: [["big", "Big letters"], ["small", "Small letters"], ["numbers", "Numbers"], ["name", "Writing her name"]], levels: "levels" }
+    trace: { name: "Snail Trails", acts: [["big", "Big letters"], ["small", "Small letters"], ["numbers", "Numbers"], ["name", "Writing her name"]], levels: "levels" },
+    story: { name: "Story Time", acts: [], level: "level", levelLabel: "Story shelf (level 2 and 3 add longer stories)" },
+    pairs: { name: "Memory Pairs", acts: [["animals", "Animal pairs"], ["letters", "Letters and animals"], ["numbers", "Numbers and dots"], ["case", "Big and small letters"]], levels: "levels" }
   };
 
   let interacted = false;
@@ -31,7 +33,7 @@
   function renderHub() { $("#hubStickerCount").textContent = Object.keys(stickers).length; show("hubHome"); }
   Pip.onHub = () => { endSession(); renderHub(); if (interacted) say("Which game shall we play?"); };
 
-  const doorWords = { meadow: "Animal Meadow!", arrow: "Arrow Farm!", honey: "Honey Keys!", reading: "Reading Nest!", trace: "Snail Trails!" };
+  const doorWords = { meadow: "Animal Meadow!", arrow: "Arrow Farm!", honey: "Honey Keys!", reading: "Reading Nest!", trace: "Snail Trails!", story: "Story Time!", pairs: "Memory Pairs!" };
   document.querySelectorAll(".door").forEach(d => {
     d.addEventListener("mouseenter", () => { if (interacted && !Pip.activeGame()) say(doorWords[d.dataset.game]); });
     d.addEventListener("click", () => Pip.openGame(d.dataset.game));
@@ -132,7 +134,7 @@
     for (const [id, g] of Object.entries(GAMES)) {
       const st = Pip.storeFor(id);
       let rows;
-      if (g.level) rows = [["Hop around", st.get("level", 1)], ...(g.extraLevels || []).map(([k, n]) => [n, st.get(k, 1)])];
+      if (g.level) rows = [[g.levelLabel || "All", st.get("level", 1)], ...(g.extraLevels || []).map(([k, n]) => [n, st.get(k, 1)])];
       else {
         const lv = st.get("levels", {});
         const names = g.levelNames || Object.fromEntries(g.acts);
@@ -213,7 +215,9 @@
     ["arrow", "hop", "Arrow Farm", ["sound:", "num:", "abc:", "dir:"]], ["arrow", "plan", "Plan the path", ["plan:"]],
     ["honey", "hunt", "Letter hunt", ["key:"]], ["honey", "words", "Animal words", ["word:"]], ["honey", "spell", "Spell it", ["spell:"]], ["honey", "name", "Typing your name", ["name:"]],
     ["reading", "sounds", "First sounds", ["snd:"]], ["reading", "build", "Build a word", ["word:"]], ["reading", "read", "Read it", ["read:"]], ["reading", "sight", "Little words", ["sight:"]],
-    ["trace", "big", "Big letters", ["up:"]], ["trace", "small", "Small letters", ["low:"]], ["trace", "numbers", "Writing numbers", ["num:"]], ["trace", "name", "Writing your name", ["name:"]]
+    ["trace", "big", "Big letters", ["up:"]], ["trace", "small", "Small letters", ["low:"]], ["trace", "numbers", "Writing numbers", ["num:"]], ["trace", "name", "Writing your name", ["name:"]],
+    ["story", "story", "Story time", ["q:"]],
+    ["pairs", "animals", "Animal pairs", ["pic:"]], ["pairs", "letters", "Letter pairs", ["abc:"]], ["pairs", "numbers", "Number pairs", ["num:"]], ["pairs", "case", "Big and small pairs", ["case:"]]
   ];
   function needScore(gid, prefixes) {
     const now = Date.now();
