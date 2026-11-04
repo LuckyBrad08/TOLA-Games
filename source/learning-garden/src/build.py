@@ -4,7 +4,9 @@ import os, re, sys
 # PIP_SOURCE: folder holding the four game folders and learning-garden/ (defaults to this session's layout)
 HOME = os.environ.get("PIP_SOURCE", "/home/user/")
 SRC = HOME + "learning-garden/src/"
-GAMES = [("meadow", "animal-meadow"), ("arrow", "arrow-farm"), ("honey", "honey-keys"), ("reading", "reading-nest")]
+GAMES = [("meadow", "animal-meadow"), ("arrow", "arrow-farm"), ("honey", "honey-keys"), ("reading", "reading-nest"), ("trace", "snail-trails")]
+# games written for the shared Pip core from the start: included as they are, with no conversion
+NATIVE = {"trace"}
 
 def once(s, old, new, what):
     n = s.count(old)
@@ -20,8 +22,8 @@ ENTER = {
 "meadow": '''  Pip.registerGame("meadow", {
     enter() {
       const st = store.get("settings", {});
-      settings.enabled = Object.assign({ count: true, letters: true, shapes: true, patterns: true }, st.enabled || {});
-      levels = Object.assign({ count: 1, letters: 1, shapes: 1, patterns: 1 }, store.get("levels", {}));
+      settings.enabled = Object.assign({ count: true, sums: true, letters: true, shapes: true, patterns: true }, st.enabled || {});
+      levels = Object.assign({ count: 1, sums: 1, letters: 1, shapes: 1, patterns: 1 }, store.get("levels", {}));
       goHome();
     },
     leave() { game = null; stopSpeech(); }
@@ -109,6 +111,25 @@ PHONE_GAME = {
   .seq { gap: 6px; }
   .seq .slot { width: 50px; font-size: 32px; border-radius: 14px; }
   .sun { width: 56px; height: 56px; }
+  .tiles { grid-template-columns: repeat(5, minmax(0, 136px)); gap: 10px; }
+  .art-sums b { font-size: 26px; }
+  .art-sums .emoji { font-size: 18px; }
+  .art-count { font-size: 24px; }
+  .art-count b { font-size: 30px; }
+  .art-letters { font-size: 44px; }
+  .art-shapes svg { width: 34px; height: 34px; }
+  .art-patterns { font-size: 20px; }
+  .field.many .critter { font-size: 26px; }
+  .field.many { gap: 4px 6px; }
+  .critter.small { font-size: 28px; padding: 2px; }
+  .group { gap: 2px 4px; }
+  .sum { gap: 10px; }
+  .op { font-size: 30px; }
+  .eq { font-size: 22px; padding: 0 14px; border-radius: 12px; box-shadow: 0 4px 0 var(--paper-edge); }
+  .ask { font-size: 22px; }
+  .choice.nest { min-width: 140px; min-height: 90px; padding: 8px 12px; }
+  .frame { gap: 4px; padding: 5px; border-radius: 12px; }
+  .frame .cell { width: 36px; font-size: 22px; border-width: 2px; border-radius: 8px; }
 }""",
 "arrow": """@media (max-height: 520px) {
   .field-row { flex-direction: row; gap: 28px; }
@@ -190,6 +211,12 @@ VOICE_SHIM = '''/* ---------- Voice (shared: Pip's one voice for every game) ---
 
 def build_game(gid, folder):
     src = open(HOME + folder + "/game.html").read()
+    if gid in NATIVE:
+        style = re.search(r"<style>(.*?)</style>", src, re.S).group(1)
+        js = re.search(r"<script>(.*?)</script>", src, re.S).group(1)
+        markup = src[src.index("</style>") + len("</style>"): src.index("<script>")]
+        print(f"{gid}: ok (written for the shared core)")
+        return f'<template id="tpl-{gid}"><style>{style}</style>{markup}</template>\n', f"<script>\n{js}</script>\n"
     style = re.search(r"<style>(.*?)</style>", src, re.S).group(1)
     js = re.search(r"<script>(.*?)</script>", src, re.S).group(1)
     markup = src[src.index("</style>") + len("</style>"): src.index("<script>")]

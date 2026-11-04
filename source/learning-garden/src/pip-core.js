@@ -6,7 +6,7 @@
     set(k, v) { try { localStorage.setItem(prefix + k, JSON.stringify(v)); } catch (e) {} }
   });
   // Each game keeps the storage keys it used as a separate file, so progress from the offline copies carries over
-  const PREFIX = { meadow: "meadow.", arrow: "arrowfarm.", honey: "honeykeys.", reading: "readingnest." };
+  const PREFIX = { meadow: "meadow.", arrow: "arrowfarm.", honey: "honeykeys.", reading: "readingnest.", trace: "snailtrails." };
   const GAME_IDS = Object.keys(PREFIX);
   const shared = mkStore("pip.");
   const storeFor = id => mkStore(PREFIX[id]);

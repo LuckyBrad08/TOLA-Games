@@ -14,12 +14,13 @@
   ];
   // What the Grown-ups corner can change in each game (stored in that game's own settings)
   const GAMES = {
-    meadow: { name: "Animal Meadow", acts: [["count", "Counting"], ["letters", "Letters"], ["shapes", "Shapes and colours"], ["patterns", "Patterns"]], levels: "levels" },
+    meadow: { name: "Animal Meadow", acts: [["count", "Counting (to 10, then to 20)"], ["sums", "Sums (more or less, adding, taking away, making 10)"], ["letters", "Letters"], ["shapes", "Shapes and colours"], ["patterns", "Patterns"]], levels: "levels", maxLevel: { count: 4, sums: 4 } },
     arrow: { name: "Arrow Farm", acts: [["snack", "Snack time"], ["numbers", "Number path"], ["sounds", "Who says moo?"], ["letters", "Letter path"]], level: "level",
       extras: [["sayDir", "Say the direction on every step (\"Up!\", \"Left!\")", true]] },
     honey: { name: "Honey Keys", acts: [], levels: "levels", levelNames: { hunt: "Letter hunt", words: "Animal words", name: "My name", mine: "My words" },
       extras: [["glow", "Always light up the next key (turn off once she knows the keyboard a bit)", false]] },
-    reading: { name: "Reading Nest", acts: [["sounds", "First sounds"], ["build", "Build a word"], ["read", "Read it!"], ["sight", "Little words"]], levels: "levels" }
+    reading: { name: "Reading Nest", acts: [["sounds", "First sounds"], ["build", "Build a word"], ["read", "Read it!"], ["sight", "Little words"]], levels: "levels" },
+    trace: { name: "Snail Trails", acts: [["big", "Big letters"], ["small", "Small letters"], ["numbers", "Numbers"], ["name", "Writing her name"]], levels: "levels" }
   };
 
   let interacted = false;
@@ -29,7 +30,7 @@
   function renderHub() { $("#hubStickerCount").textContent = Object.keys(stickers).length; show("hubHome"); }
   Pip.onHub = () => { renderHub(); if (interacted) say("Which game shall we play?"); };
 
-  const doorWords = { meadow: "Animal Meadow!", arrow: "Arrow Farm!", honey: "Honey Keys!", reading: "Reading Nest!" };
+  const doorWords = { meadow: "Animal Meadow!", arrow: "Arrow Farm!", honey: "Honey Keys!", reading: "Reading Nest!", trace: "Snail Trails!" };
   document.querySelectorAll(".door").forEach(d => {
     d.addEventListener("mouseenter", () => { if (interacted && !Pip.activeGame()) say(doorWords[d.dataset.game]); });
     d.addEventListener("click", () => Pip.openGame(d.dataset.game));
@@ -134,9 +135,9 @@
       else {
         const lv = st.get("levels", {});
         const names = g.levelNames || Object.fromEntries(g.acts);
-        rows = Object.keys(names).map(a => [names[a], lv[a] || 1]);
+        rows = Object.keys(names).map(a => [names[a], lv[a] || 1, (g.maxLevel || {})[a]]);
       }
-      html += `<h5>${g.name}</h5><div class="levels">${rows.map(([n, l]) => `<span>${n}</span><span>Level ${l} of 3</span>`).join("")}</div>`;
+      html += `<h5>${g.name}</h5><div class="levels">${rows.map(([n, l, max]) => `<span>${n}</span><span>Level ${l} of ${max || 3}</span>`).join("")}</div>`;
     }
     $("#levelList").innerHTML = html;
   }

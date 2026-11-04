@@ -89,7 +89,7 @@ h1 {
 .home-sub { font-family: var(--font-display); font-weight: 600; font-size: 24px; margin: 6px 0 0; color: var(--ink); }
 
 .tiles {
-  display: grid; grid-template-columns: repeat(4, minmax(0, 210px));
+  display: grid; grid-template-columns: repeat(5, minmax(0, 196px));
   gap: 22px; justify-content: center; width: 100%; margin-top: 2vh;
 }
 .tile {
@@ -111,6 +111,10 @@ h1 {
 .t-letters { --wash: #ffe0e6; --edge: #ef8fa3; }
 .t-shapes { --wash: #dcefff; --edge: #7db7ea; }
 .t-patterns { --wash: #e4f6dc; --edge: #86c879; }
+.t-sums { --wash: #ffe6cf; --edge: #f0a35e; }
+.art-sums { display: grid; justify-items: center; gap: 6px; }
+.art-sums b { font-family: var(--font-display); font-size: 40px; color: #c46a1c; line-height: 1; }
+.art-sums .emoji { font-size: 28px; }
 .art-count { font-size: 34px; text-align: center; }
 .art-count b { display: block; font-family: var(--font-display); font-size: 44px; color: #b4830a; line-height: 1; }
 .art-letters { font-family: var(--font-read); font-weight: 700; font-size: 64px; color: var(--berry); line-height: 1; }
@@ -198,6 +202,30 @@ h1 {
 
 /* Counting stage: rows of five, like a ten frame */
 .field { display: grid; gap: 14px 18px; justify-items: center; }
+/* 11 to 20 sit in rows of ten with a gap after five, like two ten-frames */
+.field.many { gap: 10px 8px; }
+.field.many .critter { font-size: clamp(30px, 4.2vw, 50px); }
+.field.many .critter:nth-child(10n+5) { margin-right: 16px; }
+
+/* Sums */
+.sum { display: flex; align-items: center; gap: 18px; flex-wrap: wrap; justify-content: center; }
+.group { display: grid; gap: 6px 8px; justify-items: center; }
+.critter.small { font-size: clamp(30px, 4.2vw, 46px); padding: 3px; }
+.op { font-family: var(--font-display); font-weight: 800; font-size: 48px; color: var(--ink); }
+.eq { font-family: var(--font-display); font-weight: 800; font-size: clamp(30px, 4vw, 44px); background: var(--paper); border-radius: 18px; padding: 2px 22px; box-shadow: 0 5px 0 var(--paper-edge); }
+.eq b { color: var(--berry); }
+.ask { font-family: var(--font-display); font-weight: 800; font-size: clamp(26px, 3.4vw, 40px); display: flex; align-items: center; gap: 12px; }
+.ask .emoji { font-size: 1.6em; }
+.gb.arrive { animation: arrive .7s .5s both; }
+.critter.leaving { animation: leave .8s 1.1s forwards; }
+.choice.nest { width: auto; aspect-ratio: auto; min-width: 180px; min-height: 140px; padding: 14px 18px; }
+.frame { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; padding: 8px; background: var(--paper); border-radius: 16px; box-shadow: 0 6px 0 var(--paper-edge); }
+.frame .cell { width: clamp(44px, 6vw, 64px); aspect-ratio: 1; border: 3px dashed rgba(34, 48, 74, .25); border-radius: 12px; display: grid; place-items: center; font-family: var(--emoji); font-size: clamp(28px, 4vw, 42px); }
+.frame .cell.full { border-style: solid; border-color: #f0c24a; background: #fff8dd; }
+.frame .cell.counted { border-style: solid; border-color: var(--berry); }
+.frame .cell.new { border-style: solid; border-color: var(--ok); background: #e3f6e9; animation: pop .4s ease; }
+@keyframes arrive { from { transform: translateX(70px); opacity: 0; } }
+@keyframes leave { to { transform: translateY(-26px) rotate(-14deg); opacity: .16; } }
 .critter {
   position: relative; font-family: var(--emoji); font-size: clamp(46px, 6.5vw, 72px); line-height: 1;
   padding: 8px; border-radius: 50%; transition: transform .2s, background .2s;
@@ -310,6 +338,7 @@ h2 { font-family: var(--font-display); font-weight: 800; font-size: clamp(30px, 
   .tiles { gap: 14px; }
 }
 @media (prefers-reduced-motion: reduce) {
+  .critter.leaving { opacity: .16; }
   *, *::before, *::after { animation: none !important; transition: none !important; }
 }
 .prog-time { font-weight: 700; color: var(--ink) !important; }
@@ -345,6 +374,10 @@ h2 { font-family: var(--font-display); font-weight: 800; font-size: clamp(30px, 
       <button class="tile t-count" data-act="count" aria-label="Counting game">
         <div class="tile-art art-count"><span class="emoji">🦆🦆🦆</span><b>1 2 3</b></div>
         <span class="tile-name">Counting</span>
+      </button>
+      <button class="tile t-sums" data-act="sums" aria-label="Sums game">
+        <div class="tile-art art-sums"><b>2 + 3</b><span class="emoji">🐤🐤🐤</span></div>
+        <span class="tile-name">Sums</span>
       </button>
       <button class="tile t-letters" data-act="letters" aria-label="Letters game">
         <div class="tile-art art-letters">Aa Bb</div>
@@ -471,8 +504,10 @@ h2 { font-family: var(--font-display); font-weight: 800; font-size: clamp(30px, 
   };
   const ACT_IDS = ["count", "letters", "shapes", "patterns"];
   const settings = Object.assign({ voice: true, sfx: true, rate: 0.9 }, store.get("settings", {}));
-  settings.enabled = Object.assign({ count: true, letters: true, shapes: true, patterns: true }, settings.enabled || {});
-  let levels = Object.assign({ count: 1, letters: 1, shapes: 1, patterns: 1 }, store.get("levels", {}));
+  settings.enabled = Object.assign({ count: true, sums: true, letters: true, shapes: true, patterns: true }, settings.enabled || {});
+  let levels = Object.assign({ count: 1, sums: 1, letters: 1, shapes: 1, patterns: 1 }, store.get("levels", {}));
+  // Counting goes on to 11-20 and Sums has four skills, so both climb one level higher
+  const MAX_LEVEL = { count: 4, sums: 4 };
   let stickers = store.get("stickers", {});
   const saveSettings = () => store.set("settings", settings);
 
@@ -610,7 +645,9 @@ h2 { font-family: var(--font-display); font-weight: 800; font-size: clamp(30px, 
   }
 
   /* ---------- Content ---------- */
-  const NUM_WORDS = ["zero", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten"];
+  const NUM_WORDS = ["zero", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten",
+    "eleven", "twelve", "thirteen", "fourteen", "fifteen", "sixteen", "seventeen", "eighteen", "nineteen", "twenty"];
+  const range = (a, b) => Array.from({ length: b - a + 1 }, (_, i) => a + i);
   const COUNT_ANIMALS = [
     ["🦆", "duck", "ducks"], ["🐸", "frog", "frogs"], ["🐝", "bee", "bees"], ["🐷", "pig", "pigs"],
     ["🐤", "chick", "chicks"], ["🐰", "bunny", "bunnies"], ["🐢", "turtle", "turtles"], ["🐞", "ladybird", "ladybirds"],
@@ -658,13 +695,13 @@ h2 { font-family: var(--font-display); font-weight: 800; font-size: clamp(30px, 
     name: "Counting",
     make(level) {
       const [emoji, one, many] = pick(COUNT_ANIMALS);
-      const [lo, hi] = { 1: [1, 5], 2: [2, 8], 3: [4, 10] }[level];
+      const [lo, hi] = { 1: [1, 5], 2: [2, 8], 3: [4, 10], 4: [11, 20] }[level];
       const n = +memory.pick(Array.from({ length: hi - lo + 1 }, (_, i) => "count:" + (lo + i)), 1)[0].slice(6);
-      const nOpts = level === 3 ? 4 : 3;
-      const near = shuffle([1, 2, 3, 4, 5, 6, 7, 8, 9, 10].filter(x => x !== n && Math.abs(x - n) <= 3));
+      const nOpts = level >= 3 ? 4 : 3;
+      const near = shuffle(range(1, 20).filter(x => x !== n && Math.abs(x - n) <= 3));
       const nums = [n, ...near.slice(0, nOpts - 1)].sort((a, b) => a - b);
       const stage = $("#stage");
-      stage.innerHTML = `<div class="field" style="grid-template-columns:repeat(${Math.min(n, 5)},auto)">` +
+      stage.innerHTML = `<div class="field${n > 10 ? " many" : ""}" style="grid-template-columns:repeat(${n > 10 ? 10 : Math.min(n, 5)},auto)">` +
         Array.from({ length: n }, (_, i) => `<span class="critter" data-n="${i + 1}" style="--r:${rand(17) - 8}deg">${emoji}</span>`).join("") + `</div>`;
       const critters = () => [...stage.querySelectorAll(".critter")];
       const countAloud = () => {
@@ -686,6 +723,129 @@ h2 { font-family: var(--font-display); font-weight: 800; font-size: clamp(30px, 
           stopSpeech();
           if (!(await countAloud())) return false;
           return sayQueue([{ text: `${cap(NUM_WORDS[n])} ${n === 1 ? one : many}! Well done!` }]);
+        }
+      };
+    }
+  };
+
+  /* Sums: each level adds a skill and keeps a little of the one before.
+     1: which group has more   2: adding within 5   3: adding within 10, taking away within 5
+     4: taking away within 10, making 10 */
+  const SUM_MIX = {
+    1: ["more"],
+    2: ["add5", "add5", "add5", "more"],
+    3: ["add10", "add10", "sub5", "sub5", "add5"],
+    4: ["sub10", "sub10", "bond", "bond", "add10"]
+  };
+  const FACTS = {
+    more: ["1", "2", "3", "4"].map(d => "more:" + d), // how far apart the groups are; 1 apart is the hardest to see
+    add5: range(1, 4).flatMap(a => range(1, 5 - a).map(b => `add:${a}+${b}`)),
+    add10: range(1, 9).flatMap(a => range(1, 10 - a).filter(b => a + b > 5).map(b => `add:${a}+${b}`)),
+    sub5: range(2, 5).flatMap(a => range(1, a - 1).map(b => `sub:${a}-${b}`)),
+    sub10: range(6, 10).flatMap(a => range(1, a - 1).map(b => `sub:${a}-${b}`)),
+    bond: range(1, 9).map(k => "bond:" + k)
+  };
+
+  ACTS.sums = {
+    name: "Sums",
+    make(level) {
+      const kind = pick(SUM_MIX[level]);
+      const id = memory.pick(FACTS[kind], 1)[0];
+      const [emoji, one, many] = pick(COUNT_ANIMALS);
+      const word = k => (k === 1 ? one : many);
+      const stage = $("#stage");
+      const group = (n, cls = "") => `<div class="group ${cls}" style="grid-template-columns:repeat(${Math.min(n, 5)},auto)">`
+        + Array.from({ length: n }, () => `<span class="critter small">${emoji}</span>`).join("") + `</div>`;
+      const numChoices = ans => {
+        const near = shuffle(range(0, 10).filter(x => x !== ans && Math.abs(x - ans) <= 2));
+        return [ans, ...near.slice(0, 2)].sort((a, b) => a - b).map(k => ({ correct: k === ans, label: String(k), html: `<span class="num">${k}</span>` }));
+      };
+      // Pip counts these out loud, numbering each one as she goes
+      const countThese = (els, from = 1) => {
+        els.forEach(c => c.classList.remove("counted"));
+        return sayQueue(els.map((c, i) => ({ text: String(from + i), onstart: () => { c.dataset.n = from + i; c.classList.add("counted"); sfx("pop"); } })));
+      };
+
+      if (kind === "more") {
+        const d = +id.slice(5), max = level === 1 ? 6 : 9;
+        const small = 1 + rand(max - d), big = small + d;
+        const fewer = level > 1 && Math.random() < 0.4; // "fewer" comes in once "more" is easy
+        const pair = Math.random() < 0.5 ? [big, small] : [small, big];
+        const ask = fewer ? "fewer" : "more";
+        stage.innerHTML = `<div class="ask"><span class="emoji">⚖️</span>Which group has ${ask}?</div>`;
+        return {
+          id,
+          prompt: `Which group has ${ask} ${many}?`,
+          intro: () => say(`Which group has ${ask} ${many}?`),
+          options: pair.map(n => ({ n, cls: "nest", correct: fewer ? n === small : n === big, label: `${n} ${word(n)}`, html: group(n) })),
+          wrong: opt => say(`That group has ${NUM_WORDS[opt.n]}. Look again!`),
+          hint: () => say("Count both groups."),
+          celebrate: () => say(fewer ? `Yes! ${cap(NUM_WORDS[small])} is fewer than ${NUM_WORDS[big]}!` : `Yes! ${cap(NUM_WORDS[big])} is more than ${NUM_WORDS[small]}!`)
+        };
+      }
+
+      if (kind.startsWith("add")) {
+        const [a, b] = id.slice(4).split("+").map(Number);
+        stage.innerHTML = `<div class="sum">${group(a, "ga")}<span class="op">+</span>${group(b, "gb arrive")}</div><div class="eq">${a} + ${b} = <b>?</b></div>`;
+        const all = () => [...stage.querySelectorAll(".critter")];
+        return {
+          id,
+          prompt: `${a} ${word(a)} and ${b} more. How many now?`,
+          intro: () => say(`${cap(NUM_WORDS[a])} ${word(a)}. ${cap(NUM_WORDS[b])} more ${b === 1 ? "comes" : "come"}. How many ${many} now?`),
+          options: numChoices(a + b),
+          wrong: opt => say(`Not ${opt.label}. Let's count them all.`),
+          hint: async () => { if (await countThese(all())) say(`How many ${many}?`); },
+          celebrate: async () => {
+            stage.querySelector(".eq b").textContent = a + b;
+            stopSpeech();
+            if (!(await countThese(all()))) return false;
+            return sayQueue([`${cap(NUM_WORDS[a])} and ${NUM_WORDS[b]} make ${NUM_WORDS[a + b]}!`]);
+          }
+        };
+      }
+
+      if (kind.startsWith("sub")) {
+        const [a, b] = id.slice(4).split("-").map(Number);
+        stage.innerHTML = `<div class="sum"><div class="group" style="grid-template-columns:repeat(${Math.min(a, 5)},auto)">`
+          + Array.from({ length: a }, (_, i) => `<span class="critter small${i >= a - b ? " leaving" : ""}">${emoji}</span>`).join("")
+          + `</div></div><div class="eq">${a} − ${b} = <b>?</b></div>`;
+        const stayers = () => [...stage.querySelectorAll(".critter:not(.leaving)")];
+        return {
+          id,
+          prompt: `${a} ${many}. ${b} ${b === 1 ? "goes" : "go"} away. How many are left?`,
+          intro: () => say(`${cap(NUM_WORDS[a])} ${many}. ${cap(NUM_WORDS[b])} ${b === 1 ? "goes" : "go"} away. How many are left?`),
+          options: numChoices(a - b),
+          wrong: opt => say(`Not ${opt.label}. Let's count the ones still here.`),
+          hint: async () => { if (await countThese(stayers())) say("How many are left?"); },
+          celebrate: async () => {
+            stage.querySelector(".eq b").textContent = a - b;
+            stopSpeech();
+            if (!(await countThese(stayers()))) return false;
+            return sayQueue([`${cap(NUM_WORDS[a])} take away ${NUM_WORDS[b]} leaves ${NUM_WORDS[a - b]}!`]);
+          }
+        };
+      }
+
+      // Making 10: a ten-frame with some spaces filled
+      const k = +id.slice(5);
+      stage.innerHTML = `<div class="frame">` + range(1, 10).map(i => `<span class="cell${i <= k ? " full" : ""}">${i <= k ? emoji : ""}</span>`).join("")
+        + `</div><div class="eq">${k} + <b>?</b> = 10</div>`;
+      const empties = () => [...stage.querySelectorAll(".frame .cell:not(.full)")];
+      return {
+        id,
+        prompt: "How many more to make 10?",
+        intro: () => say(`There ${k === 1 ? "is" : "are"} ${NUM_WORDS[k]} ${word(k)}. How many more to make ten?`),
+        options: numChoices(10 - k),
+        wrong: opt => say(`Not ${opt.label}. Count the empty spaces.`),
+        hint: async () => { if (await countThese(empties())) say("How many more to make ten?"); },
+        celebrate: async () => {
+          stage.querySelector(".eq b").textContent = 10 - k;
+          stopSpeech();
+          const cells = empties();
+          // fill the frame one by one, counting on from k: "eight, nine, ten!"
+          const ok = await sayQueue(cells.map((c, i) => ({ text: String(k + 1 + i), onstart: () => { c.textContent = emoji; c.classList.add("new"); sfx("pop"); } })));
+          if (!ok) return false;
+          return sayQueue([`${cap(NUM_WORDS[k])} and ${NUM_WORDS[10 - k]} make ten!`]);
         }
       };
     }
@@ -824,7 +984,7 @@ h2 { font-family: var(--font-display); font-weight: 800; font-size: clamp(30px, 
     if (speak && interacted) say("Pick a game!");
   }
 
-  const tileWords = { count: "Counting! Count the animals.", letters: "Letters! Find the first letter.", shapes: "Shapes and colours!", patterns: "Patterns! What comes next?" };
+  const tileWords = { sums: "Sums! Adding and taking away.", count: "Counting! Count the animals.", letters: "Letters! Find the first letter.", shapes: "Shapes and colours!", patterns: "Patterns! What comes next?" };
   document.querySelectorAll(".tile").forEach(t => {
     t.addEventListener("mouseenter", () => { if (interacted && !game) say(tileWords[t.dataset.act]); });
     t.addEventListener("click", () => startActivity(t.dataset.act));
@@ -859,7 +1019,7 @@ h2 { font-family: var(--font-display); font-weight: 800; font-size: clamp(30px, 
     box.innerHTML = "";
     q.options.forEach(opt => {
       const b = document.createElement("button");
-      b.className = "choice";
+      b.className = "choice" + (opt.cls ? " " + opt.cls : "");
       b.innerHTML = opt.html;
       b.setAttribute("aria-label", opt.label);
       b.addEventListener("click", () => choose(b, opt));
@@ -910,7 +1070,7 @@ h2 { font-family: var(--font-display); font-weight: 800; font-size: clamp(30px, 
   function finishRound() {
     const g = game;
     const before = levels[g.id];
-    if (g.good >= 4) levels[g.id] = Math.min(3, before + 1);
+    if (g.good >= 4) levels[g.id] = Math.min(MAX_LEVEL[g.id] || 3, before + 1);
     else if (g.good <= 2) levels[g.id] = Math.max(1, before - 1);
     store.set("levels", levels);
 
@@ -980,7 +1140,11 @@ h2 { font-family: var(--font-display); font-weight: 800; font-size: clamp(30px, 
     $("#levelList").innerHTML = ACT_IDS.map(id => `<span>${ACTS[id].name}</span><span>Level ${levels[id]} of 3</span>`).join("");
   }
   const PROGRESS = [
-    { label: "Counting", prefix: "count:", ids: ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10"] },
+    { label: "Counting", prefix: "count:", ids: range(1, 20).map(String) },
+    { label: "More or less", prefix: "more:", ids: ["1", "2", "3", "4"], show: d => `groups ${d} apart` },
+    { label: "Adding", prefix: "add:", ids: FACTS.add5.concat(FACTS.add10).map(f => f.slice(4)) },
+    { label: "Taking away", prefix: "sub:", ids: FACTS.sub5.concat(FACTS.sub10).map(f => f.slice(4)) },
+    { label: "Making 10", prefix: "bond:", ids: range(1, 9).map(String), show: k => `${k} + ? = 10` },
     { label: "Letters", prefix: "letter:", ids: [...new Set(LETTER_ANIMALS.map(a => a[1][0]))].sort(), show: c => c.toUpperCase() },
     { label: "Shapes", prefix: "shape:", ids: SHAPES },
     { label: "Colours", prefix: "colour:", ids: Object.keys(COLORS) },
