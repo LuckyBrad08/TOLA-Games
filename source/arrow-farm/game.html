@@ -1,0 +1,989 @@
+<title>Arrow Farm</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Andika:wght@400;700&family=Baloo+2:wght@600;800&display=swap">
+<style>
+/* Layout: one-screen farm. Fenced field of grass squares on the left, a big arrow-key pad on the right
+   that lights up with the key she presses. Single bright world on purpose, so colours are fixed. */
+:root {
+  --sky: #a6dcf6;
+  --sky-low: #e3f5fc;
+  --grass-a: #92d27c;
+  --grass-b: #84c76f;
+  --meadow: #6fb85f;
+  --fence: #b98048;
+  --fence-dark: #8a5a2e;
+  --barn: #d8434b;
+  --wheat: #ffd45e;
+  --ink: #22304a;
+  --ink-soft: #4d5d78;
+  --paper: #ffffff;
+  --paper-edge: #d5e3ee;
+  --ok: #2c9c5a;
+  --font-display: "Baloo 2", "Arial Rounded MT Bold", "Trebuchet MS", system-ui, sans-serif;
+  --font-read: "Andika", "Century Gothic", "Segoe UI", system-ui, sans-serif;
+  --emoji: "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif;
+  color-scheme: light;
+}
+*, *::before, *::after { box-sizing: border-box; }
+[hidden] { display: none !important; }
+html, body { height: 100%; }
+body {
+  margin: 0; font-family: var(--font-read); font-size: 18px; color: var(--ink);
+  background: linear-gradient(180deg, var(--sky) 0%, var(--sky-low) 38%, var(--meadow) 38.1%, #5ea64f 100%);
+  overflow: hidden; user-select: none; -webkit-user-select: none;
+}
+button { font: inherit; color: inherit; cursor: pointer; }
+button:focus-visible { outline: 4px solid var(--barn); outline-offset: 4px; }
+
+.scenery { position: fixed; inset: 0; pointer-events: none; z-index: 0; overflow: hidden; }
+.barn { position: absolute; right: 4%; top: calc(38% - 118px); width: 130px; height: 118px; }
+.barn::before { content: ""; position: absolute; left: 0; right: 0; top: 0; height: 52px; background: var(--fence-dark); clip-path: polygon(50% 0, 100% 100%, 0 100%); }
+.barn::after { content: ""; position: absolute; left: 12px; right: 12px; top: 52px; bottom: 0; background: var(--barn); border-radius: 2px; box-shadow: inset 0 0 0 6px rgba(255,255,255,.55); }
+.rail { position: absolute; left: 0; right: 0; top: calc(38% - 26px); height: 26px; background:
+  linear-gradient(var(--fence) 0 0) 0 4px / 100% 6px no-repeat,
+  linear-gradient(var(--fence) 0 0) 0 16px / 100% 6px no-repeat,
+  repeating-linear-gradient(90deg, var(--fence-dark) 0 8px, transparent 8px 64px); }
+
+#app { position: relative; z-index: 1; height: 100%; }
+.screen {
+  height: 100%; display: flex; flex-direction: column; align-items: center; gap: 14px;
+  padding-block: 16px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  overflow-y: auto;
+}
+.center { justify-content: center; text-align: center; }
+
+/* Shared bits */
+.pip { font-family: var(--emoji); line-height: 1; border: 0; border-radius: 50%; background: var(--paper); display: grid; place-items: center; box-shadow: 0 6px 0 var(--paper-edge); flex: none; }
+h1 {
+  font-family: var(--font-display); font-weight: 800; font-size: clamp(42px, 6vw, 70px); line-height: .95; margin: 0;
+  color: var(--wheat);
+  text-shadow: 0 4px 0 var(--ink), 3px 0 0 var(--ink), -3px 0 0 var(--ink), 0 -3px 0 var(--ink), 3px 4px 0 var(--ink), -3px 4px 0 var(--ink);
+}
+h2 { font-family: var(--font-display); font-weight: 800; font-size: clamp(30px, 4vw, 44px); margin: 0; line-height: 1.1; text-wrap: balance; }
+.kbd {
+  display: inline-grid; place-items: center; min-width: 48px; height: 48px; padding: 0 12px;
+  background: var(--paper); border-radius: 12px; box-shadow: 0 5px 0 #b7c6d3, inset 0 0 0 2px #e6eef5;
+  font-family: var(--font-display); font-weight: 800; font-size: 24px; color: var(--ink);
+}
+.kbd.space { min-width: 150px; font-size: 18px; letter-spacing: .08em; text-transform: uppercase; }
+.pill {
+  border: 0; border-radius: 999px; padding: 12px 22px; background: var(--paper); box-shadow: 0 6px 0 var(--paper-edge);
+  font-family: var(--font-display); font-weight: 800; font-size: 22px; display: inline-flex; align-items: center; gap: 10px;
+  transition: transform .12s;
+}
+.pill:hover { transform: translateY(-3px); }
+.pill .emoji { font-size: 26px; }
+.emoji { font-family: var(--emoji); line-height: 1; }
+.badge { background: var(--wheat); border-radius: 999px; padding: 0 10px; font-size: 18px; }
+.btn-row { display: flex; gap: 16px; flex-wrap: wrap; justify-content: center; }
+.round-btn {
+  width: 60px; height: 60px; border-radius: 50%; border: 0; background: var(--paper); box-shadow: 0 6px 0 var(--paper-edge);
+  font-family: var(--emoji); font-size: 28px; display: grid; place-items: center; flex: none; transition: transform .12s;
+}
+.round-btn:hover { transform: scale(1.08); }
+.paws { display: flex; gap: 10px; }
+.paw { width: 42px; height: 42px; border-radius: 50%; background: rgba(255,255,255,.5); border: 3px dashed rgba(34,48,74,.25); display: grid; place-items: center; font-family: var(--emoji); font-size: 21px; }
+.paw.got { background: var(--paper); border: 3px solid var(--paper-edge); animation: pop .4s ease; }
+.paw.gold { background: var(--wheat); border-color: #e9a800; }
+
+/* Start: pick an animal */
+.start-head { display: flex; align-items: center; gap: 18px; margin-top: 1vh; }
+.start-head .pip { width: 104px; height: 104px; font-size: 66px; }
+.start-sub { font-family: var(--font-display); font-weight: 600; font-size: 22px; margin: 6px 0 0; }
+.pickers { display: flex; gap: 16px; flex-wrap: wrap; justify-content: center; margin-top: 2vh; }
+.pick {
+  width: clamp(104px, 12vw, 140px); aspect-ratio: 1; border: 0; border-radius: 30px; background: var(--paper);
+  box-shadow: 0 8px 0 var(--paper-edge); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px;
+  transition: transform .15s;
+}
+.pick .emoji { font-size: clamp(54px, 6vw, 72px); }
+.pick span:last-child { font-family: var(--font-display); font-weight: 800; font-size: 20px; }
+.pick.sel { box-shadow: 0 8px 0 #e9a800, 0 0 0 6px var(--wheat); transform: translateY(-8px) scale(1.06); }
+.pick.sel .emoji { animation: hop .7s ease infinite; }
+.how { display: flex; gap: 22px; align-items: center; flex-wrap: wrap; justify-content: center; margin-top: 2vh;
+  background: rgba(255,255,255,.75); border-radius: 26px; padding: 14px 24px; font-family: var(--font-display); font-weight: 800; font-size: 22px; }
+.how > div { display: flex; align-items: center; gap: 10px; }
+.start-foot { margin-top: auto; display: flex; gap: 16px; align-items: center; flex-wrap: wrap; justify-content: center; }
+.grownup { position: relative; overflow: hidden; border: 2px solid rgba(255,255,255,.75); border-radius: 999px; padding: 8px 16px; background: rgba(255,255,255,.2); color: var(--paper); font-size: 15px; font-weight: 700; }
+.grownup .fill { position: absolute; inset: 0; background: rgba(255,255,255,.45); transform: scaleX(0); transform-origin: left; }
+.grownup.holding .fill { transform: scaleX(1); transition: transform 1.5s linear; }
+.grownup span { position: relative; }
+
+/* Play */
+.topbar { width: 100%; max-width: 1080px; display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.bubble-row { display: flex; align-items: center; gap: 14px; width: 100%; max-width: 1080px; }
+.bubble-row .pip { width: 70px; height: 70px; font-size: 46px; }
+.bubble {
+  position: relative; flex: 1; min-width: 0; background: var(--paper); border-radius: 24px; padding: 12px 22px;
+  font-family: var(--font-display); font-weight: 800; font-size: clamp(22px, 3vw, 34px); line-height: 1.15;
+  box-shadow: 0 6px 0 var(--paper-edge); text-wrap: balance;
+}
+.bubble::before { content: ""; position: absolute; left: -14px; top: 50%; margin-top: -12px; border: 12px solid transparent; border-right: 16px solid var(--paper); border-left: 0; }
+.bubble .goal { display: inline-grid; place-items: center; min-width: 1.4em; height: 1.4em; border-radius: 50%; background: var(--wheat); padding: 0 .2em; margin-left: .2em; }
+.field-row { flex: 1; width: 100%; max-width: 1080px; display: flex; align-items: center; justify-content: center; gap: 4vw; min-height: 0; }
+
+.board {
+  --bs: min(calc(100vh - 230px), 560px, calc(100vw - 32px));
+  width: var(--bs); height: var(--bs); flex: none; position: relative;
+  display: grid; grid-template-columns: repeat(var(--n), 1fr); grid-template-rows: repeat(var(--n), 1fr);
+  border: 12px solid var(--fence); border-radius: 18px; box-shadow: 0 0 0 4px var(--fence-dark), 0 14px 26px rgba(34,48,74,.25);
+  background: var(--grass-a); overflow: hidden;
+}
+.board.bump { animation: shake .3s ease; }
+.cell { position: relative; display: grid; place-items: center; background: var(--grass-a); font-size: calc(var(--bs) / var(--n) * .62); }
+.cell.alt { background: var(--grass-b); }
+.cell.trail::after { content: "🐾"; font-family: var(--emoji); position: absolute; font-size: 32%; opacity: .35; }
+.cell .tree { font-family: var(--emoji); line-height: 1; }
+.item { position: relative; z-index: 1; display: grid; place-items: center; line-height: 1; transition: transform .3s, opacity .3s; }
+.item.pic { font-family: var(--emoji); animation: idle 2.4s ease-in-out infinite; }
+.item.token {
+  width: 74%; height: 74%; border-radius: 50%; font-family: var(--font-display); font-weight: 800; font-size: 72%;
+  background: var(--wheat); color: var(--ink); box-shadow: 0 4px 0 #d9a520, inset 0 0 0 3px rgba(255,255,255,.6);
+}
+.item.token.letter { font-family: var(--font-read); font-weight: 700; background: #ffd0dc; box-shadow: 0 4px 0 #e98aa1, inset 0 0 0 3px rgba(255,255,255,.6); }
+.item.got { transform: scale(.55); opacity: .45; }
+.item.got::after { content: "✓"; position: absolute; font-family: var(--font-display); color: var(--ok); font-size: 120%; }
+.item.nope { animation: wiggle .45s ease; }
+.player {
+  position: absolute; left: 0; top: 0; z-index: 2;
+  width: calc(100% / var(--n)); height: calc(100% / var(--n));
+  display: grid; place-items: center; transition: transform .16s ease-out;
+  font-size: calc(var(--bs) / var(--n) * .7);
+}
+.player .hop { font-family: var(--emoji); line-height: 1; display: block; filter: drop-shadow(0 5px 0 rgba(34,48,74,.2)); }
+.player .hop.go { animation: hop .2s ease-out; }
+.player .hop.bonk { animation: bonk .3s ease; }
+.player .hop.dance { animation: dance .5s ease 3; }
+
+.pad { display: grid; grid-template-columns: repeat(3, auto); grid-template-rows: auto auto; gap: 10px; flex: none; }
+.key {
+  width: clamp(76px, 8vw, 104px); aspect-ratio: 1; border: 0; border-radius: 22px; background: var(--paper);
+  box-shadow: 0 8px 0 #b7c6d3, inset 0 0 0 3px #e6eef5; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px;
+  transition: transform .08s, box-shadow .08s, background .15s;
+}
+.key svg { width: 46%; height: 46%; }
+.key svg path { fill: var(--ink); }
+.key span { font-family: var(--font-display); font-weight: 800; font-size: 18px; line-height: 1; }
+.key.up { grid-column: 2; }
+.key.left { grid-column: 1; grid-row: 2; }
+.key.down { grid-column: 2; grid-row: 2; }
+.key.right { grid-column: 3; grid-row: 2; }
+.key.pressed { transform: translateY(6px); box-shadow: 0 2px 0 #b7c6d3, inset 0 0 0 3px #e6eef5; background: #e9f6ff; }
+.key.hint { background: var(--wheat); animation: glow 1s ease-in-out infinite; }
+
+/* Reward + book */
+.eyebrow { font-family: var(--font-display); font-weight: 800; letter-spacing: .12em; text-transform: uppercase; font-size: 18px; margin: 0; color: var(--ink-soft); }
+.sticker-big {
+  font-family: var(--emoji); font-size: clamp(110px, 17vw, 170px); line-height: 1;
+  width: clamp(170px, 26vw, 250px); aspect-ratio: 1; border-radius: 50%; background: var(--paper);
+  display: grid; place-items: center; border: 8px dashed var(--wheat); box-shadow: 0 12px 0 rgba(34,48,74,.12);
+  animation: sticker .9s cubic-bezier(.2, 1.6, .4, 1) both;
+}
+.hint-line { display: flex; align-items: center; gap: 12px; font-family: var(--font-display); font-weight: 800; font-size: 20px; }
+.book-head { display: flex; align-items: center; gap: 16px; width: 100%; max-width: 900px; }
+.book-head h2 { flex: 1; }
+.book { width: 100%; max-width: 900px; background: var(--paper); border-radius: 34px; padding: 22px; box-shadow: 0 10px 0 var(--paper-edge);
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(92px, 1fr)); gap: 14px; }
+.slotb { position: relative; aspect-ratio: 1; border: 0; border-radius: 24px; background: #f1f7fb; display: grid; place-items: center; font-family: var(--emoji); font-size: 54px; line-height: 1; transition: transform .15s; }
+.slotb.have { background: #fff6d6; }
+.slotb.have:hover { transform: scale(1.08) rotate(-4deg); }
+.slotb.empty span { filter: grayscale(1) brightness(0); opacity: .12; }
+.slotb .n { position: absolute; bottom: 6px; right: 8px; font-family: var(--font-display); font-weight: 800; font-size: 16px; background: var(--wheat); border-radius: 999px; padding: 0 8px; }
+
+/* Click-to-play gate (the keyboard only reaches the game once it has focus) */
+.gate { position: fixed; inset: 0; z-index: 8; background: rgba(34,48,74,.5); display: grid; place-items: center; padding: 16px; border: 0; width: 100%; cursor: pointer; }
+.gate-card { background: var(--paper); border-radius: 34px; padding: 28px 40px; text-align: center; box-shadow: 0 12px 0 var(--paper-edge); display: grid; gap: 10px; justify-items: center; }
+.gate-card .emoji { font-size: 84px; animation: hop .8s ease infinite; }
+.gate-card b { font-family: var(--font-display); font-weight: 800; font-size: clamp(28px, 4vw, 40px); }
+.gate-card small { font-size: 16px; color: var(--ink-soft); }
+
+/* Grown-ups sheet */
+.sheet-wrap { position: fixed; inset: 0; z-index: 9; background: rgba(34,48,74,.45); display: grid; place-items: center; padding: 16px; }
+.sheet { width: 100%; max-width: 560px; max-height: 100%; overflow-y: auto; background: var(--paper); border-radius: 22px; padding: 22px 24px; font-size: 16px; line-height: 1.5; user-select: text; -webkit-user-select: text; }
+.sheet h3 { font-family: var(--font-display); font-size: 26px; margin: 0 0 4px; }
+.sheet h4 { font-size: 13px; letter-spacing: .1em; text-transform: uppercase; color: var(--ink-soft); margin: 18px 0 6px; }
+.sheet label { display: flex; align-items: center; gap: 10px; padding: 4px 0; cursor: pointer; }
+.sheet input[type=checkbox] { width: 20px; height: 20px; accent-color: var(--ok); }
+.sheet select { font: inherit; padding: 4px 8px; border-radius: 8px; border: 1px solid var(--paper-edge); }
+.sheet p { margin: 4px 0; color: var(--ink-soft); }
+.sbtn { border: 1px solid var(--paper-edge); background: #f4f8fb; border-radius: 10px; padding: 7px 14px; font-weight: 700; font-size: 15px; }
+.sbtn.danger { color: #b3203f; }
+.sbtn.primary { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+.sheet .row { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin-top: 8px; }
+
+.bit { position: fixed; width: 12px; height: 12px; border-radius: 3px; z-index: 7; pointer-events: none; animation: burst .9s ease-out forwards; }
+@keyframes burst { to { transform: translate(var(--dx), var(--dy)) rotate(540deg); opacity: 0; } }
+@keyframes pop { 0% { transform: scale(.4); } 70% { transform: scale(1.15); } 100% { transform: scale(1); } }
+@keyframes hop { 0%, 100% { transform: translateY(0); } 45% { transform: translateY(-22%); } }
+@keyframes bonk { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-10%) rotate(-8deg); } 75% { transform: translateX(10%) rotate(8deg); } }
+@keyframes dance { 0%, 100% { transform: rotate(0) scale(1); } 25% { transform: rotate(-14deg) scale(1.15); } 75% { transform: rotate(14deg) scale(1.15); } }
+@keyframes idle { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-6%); } }
+@keyframes wiggle { 0%, 100% { transform: rotate(0); } 25% { transform: rotate(-12deg); } 75% { transform: rotate(12deg); } }
+@keyframes shake { 0%, 100% { transform: translateX(0); } 30% { transform: translateX(-5px); } 70% { transform: translateX(5px); } }
+@keyframes glow { 0%, 100% { box-shadow: 0 8px 0 #d9a520, 0 0 0 0 rgba(255, 184, 0, 0); } 50% { box-shadow: 0 8px 0 #d9a520, 0 0 0 12px rgba(255, 184, 0, .6); } }
+@keyframes sticker { 0% { transform: scale(0) rotate(-30deg); } 100% { transform: scale(1) rotate(0); } }
+
+@media (max-width: 860px) {
+  .field-row { flex-direction: column; gap: 14px; }
+  .board { --bs: min(calc(100vh - 420px), 520px, calc(100vw - 32px)); min-width: 240px; min-height: 240px; }
+  .key { width: 70px; }
+  .barn { display: none; }
+}
+@media (max-width: 520px) {
+  .paws { gap: 5px; }
+  .paw { width: 32px; height: 32px; font-size: 16px; }
+  .round-btn { width: 50px; height: 50px; font-size: 22px; }
+  .board { min-width: 0; min-height: 0; --bs: calc(100vw - 32px); }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+}
+.prog-time { font-weight: 700; color: var(--ink) !important; }
+.prog-group { margin: 10px 0; }
+.prog-group > b { display: block; color: var(--ink); }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 4px; align-items: center; }
+.chip-label { font-size: 13px; color: var(--ink-soft); min-width: 86px; }
+.chip { border-radius: 999px; padding: 1px 10px; font-size: 15px; font-weight: 700; font-family: var(--font-read); }
+.chip.work { background: #ffe1c4; color: #8a4500; }
+.chip.good { background: #d3f1dc; color: #1c6a39; }
+.prog-note { font-size: 14px; }
+</style>
+
+<div class="scenery" aria-hidden="true"><div class="rail"></div><div class="barn"></div></div>
+
+<div id="app">
+  <!-- Start: choose an animal -->
+  <section id="start" class="screen">
+    <div class="start-head">
+      <button class="pip" id="pipStart" aria-label="Pip the panda says hello">🐼</button>
+      <div>
+        <h1>Arrow Farm</h1>
+        <p class="start-sub">Who do you want to be today?</p>
+      </div>
+    </div>
+    <div class="pickers" id="pickers"></div>
+    <div class="how">
+      <div><span class="kbd">←</span><span class="kbd">→</span> choose</div>
+      <div><span class="kbd space">space</span> play</div>
+    </div>
+    <div class="start-foot">
+      <button class="pill" id="bookBtn" tabindex="-1"><span class="emoji">⭐</span> Stickers <span class="badge" id="stickerCount">0</span></button>
+      <button class="grownup" id="grownBtn" tabindex="-1" title="Press and hold to open settings"><span class="fill"></span><span>Grown-ups: press and hold</span></button>
+    </div>
+  </section>
+
+  <!-- Play -->
+  <section id="play" class="screen" hidden>
+    <div class="topbar">
+      <button class="round-btn" id="homeBtn" tabindex="-1" aria-label="Back to start">🏠</button>
+      <div class="paws" id="paws" aria-label="Progress"></div>
+      <button class="round-btn" id="repeatBtn" tabindex="-1" aria-label="Hear it again">🔊</button>
+    </div>
+    <div class="bubble-row">
+      <button class="pip" id="pipPlay" tabindex="-1" aria-label="Hear it again">🐼</button>
+      <div class="bubble" id="prompt" aria-live="polite"></div>
+    </div>
+    <div class="field-row">
+      <div class="board" id="board" style="--n:5"></div>
+      <div class="pad" id="pad">
+        <button class="key up" data-key="ArrowUp" tabindex="-1" aria-label="Up"><svg viewBox="0 0 24 24"><path d="M12 3 22 15h-6v6H8v-6H2z"/></svg><span>Up</span></button>
+        <button class="key left" data-key="ArrowLeft" tabindex="-1" aria-label="Left"><svg viewBox="0 0 24 24"><path d="M3 12 15 2v6h6v8h-6v6z"/></svg><span>Left</span></button>
+        <button class="key down" data-key="ArrowDown" tabindex="-1" aria-label="Down"><svg viewBox="0 0 24 24"><path d="M12 21 2 9h6V3h8v6h6z"/></svg><span>Down</span></button>
+        <button class="key right" data-key="ArrowRight" tabindex="-1" aria-label="Right"><svg viewBox="0 0 24 24"><path d="M21 12 9 22v-6H3V8h6V2z"/></svg><span>Right</span></button>
+      </div>
+    </div>
+  </section>
+
+  <!-- Reward -->
+  <section id="reward" class="screen center" hidden>
+    <p class="eyebrow">Round finished</p>
+    <div class="paws" id="rewardPaws"></div>
+    <div class="sticker-big" id="newSticker"></div>
+    <h2 id="rewardText"></h2>
+    <div class="hint-line"><span class="kbd space">space</span> play again</div>
+    <div class="btn-row">
+      <button class="pill" id="rewardBook" tabindex="-1"><span class="emoji">⭐</span> Stickers</button>
+      <button class="pill" id="rewardHome" tabindex="-1"><span class="emoji">🏠</span> Choose animal</button>
+    </div>
+  </section>
+
+  <!-- Sticker book -->
+  <section id="book" class="screen" hidden>
+    <div class="book-head">
+      <button class="round-btn" id="bookHome" tabindex="-1" aria-label="Back to start">🏠</button>
+      <h2>My sticker book</h2>
+      <span class="badge" id="bookCount" style="font-size:22px;font-family:var(--font-display);font-weight:800"></span>
+    </div>
+    <div class="book" id="bookGrid"></div>
+    <div class="hint-line"><span class="kbd space">space</span> go back</div>
+  </section>
+</div>
+
+<button class="gate" id="gate" aria-label="Click to play">
+  <span class="gate-card">
+    <span class="emoji">🐰</span>
+    <b id="gateText">Click here to play!</b>
+    <small>Then use the arrow keys on the keyboard.</small>
+  </span>
+</button>
+
+<div class="sheet-wrap" id="sheetWrap" hidden>
+  <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="sheetTitle">
+    <h3 id="sheetTitle">Grown-ups corner</h3>
+    <p>She moves her animal with the arrow keys. Each round has 5 puzzles and ends with a sticker. If she stops for a while or keeps bumping into things, the arrow she needs lights up yellow and Pip says which one to press.</p>
+
+    <h4>Progress</h4>
+    <div id="progress"></div>
+    <p>The game remembers each item. Ones she gets wrong come back more often until she gets them right a few times in a row; ones she knows come back every few days so she keeps them.</p>
+    <div class="row" id="memReset"></div>
+
+    <h4>Puzzles</h4>
+    <label><input type="checkbox" id="en-snack"> Snack time (walk to the animal's favourite food)</label>
+    <label><input type="checkbox" id="en-numbers"> Number path (hop on 1, 2, 3 in order)</label>
+    <label><input type="checkbox" id="en-sounds"> Who says moo? (animal sounds)</label>
+    <label><input type="checkbox" id="en-letters"> Letter path (hop on A, B, C in order)</label>
+
+    <h4>Sound</h4>
+    <label><input type="checkbox" id="optVoice"> Pip reads everything aloud</label>
+    <label><input type="checkbox" id="optDir"> Say the direction on every step ("Up!", "Left!")</label>
+    <label>Speaking speed
+      <select id="optRate"><option value="0.75">Slower</option><option value="0.9">Normal</option><option value="1.05">Faster</option></select>
+    </label>
+    <div class="row"><label for="optVoiceName" style="padding:0">Pip's voice</label><select id="optVoiceName" style="max-width:100%"></select><button type="button" class="sbtn" id="testVoice">Test</button></div>
+    <p>Voices with "Natural" in the name are the clearest. They need an internet connection; without one the game uses the best voice on the laptop.</p>
+    <label><input type="checkbox" id="optSfx"> Sound effects</label>
+
+    <h4>Difficulty (adjusts by itself)</h4>
+    <p>Level 1 is a 5×5 field with almost no trees. Level 3 is 7×7 with more trees and longer paths. A round with 1 hint or fewer moves up a level; 5 or more hints moves down.</p>
+    <p id="levelNow"></p>
+    <div class="row"><button class="sbtn" id="resetLevel">Go back to level 1</button></div>
+
+    <h4>Sticker book</h4>
+    <div class="row" id="stickerReset"></div>
+
+    <div class="row" style="margin-top:22px;justify-content:flex-end"><button class="sbtn primary" id="closeSheet">Done</button></div>
+  </div>
+</div>
+
+<script>
+(() => {
+  "use strict";
+  const $ = s => document.querySelector(s);
+  const rand = n => Math.floor(Math.random() * n);
+  const pick = a => a[rand(a.length)];
+  const shuffle = a => { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = rand(i + 1); [a[i], a[j]] = [a[j], a[i]]; } return a; };
+  const wait = ms => new Promise(r => setTimeout(r, ms));
+  const cap = s => s.charAt(0).toUpperCase() + s.slice(1);
+  const article = w => (/^[aeiou]/i.test(w) ? "an " : "a ") + w;
+  const reduceMotion = window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  /* ---------- Saved settings ---------- */
+  const store = {
+    get(k, d) { try { const v = localStorage.getItem("arrowfarm." + k); return v == null ? d : JSON.parse(v); } catch (e) { return d; } },
+    set(k, v) { try { localStorage.setItem("arrowfarm." + k, JSON.stringify(v)); } catch (e) {} }
+  };
+  const TYPES = ["snack", "numbers", "sounds", "letters"];
+  const settings = Object.assign({ voice: true, sfx: true, sayDir: true, rate: 0.9, animal: 0 }, store.get("settings", {}));
+  settings.enabled = Object.assign({ snack: true, numbers: true, sounds: true, letters: true }, settings.enabled || {});
+  let level = store.get("level", 1);
+  let stickers = store.get("stickers", {});
+  const saveSettings = () => store.set("settings", settings);
+
+  /* ---------- Learning memory ----------
+     Every item (a number, letter, key, sound...) has a box from 0 to 5. Right first time moves it up
+     a box; a mistake drops it to 0. Shaky and new items are picked more often, and known ones come
+     back after a gap (1, 2, 4, 8 days) so they are not forgotten. */
+  const memory = {
+    data: store.get("memory", {}),
+    rec(id) { return this.data[id] || (this.data[id] = { box: 0, seen: 0, right: 0, wrong: 0, last: 0 }); },
+    result(id, firstTry) {
+      const r = this.rec(id);
+      r.seen++; r.last = Date.now();
+      if (firstTry) { r.right++; r.box = Math.min(5, r.box + 1); } else { r.wrong++; r.box = 0; }
+      store.set("memory", this.data);
+    },
+    weight(id) {
+      const r = this.data[id];
+      if (!r || !r.seen) return 3;
+      const days = (Date.now() - r.last) / 864e5;
+      const due = r.box >= 2 && days >= [0, 0, 1, 2, 4, 8][r.box];
+      return [6, 3.5, 2, 1.2, 0.8, 0.5][r.box] + (due ? 2 : 0);
+    },
+    pick(ids, n) {
+      const pool = ids.slice(), out = [];
+      while (out.length < n && pool.length) {
+        const ws = pool.map(id => this.weight(id)), total = ws.reduce((a, b) => a + b, 0);
+        let x = Math.random() * total, i = 0;
+        while (x > ws[i] && i < ws.length - 1) { x -= ws[i]; i++; }
+        out.push(pool.splice(i, 1)[0]);
+      }
+      return out;
+    },
+    reset() { this.data = {}; store.set("memory", {}); }
+  };
+  const playTime = {
+    data: store.get("time", {}),
+    day(t) { const d = new Date(t); return d.getFullYear() + "-" + (d.getMonth() + 1) + "-" + d.getDate(); },
+    tick() {
+      if (document.hidden || !document.hasFocus() || $("#play").hidden) return;
+      const k = this.day(Date.now()); this.data[k] = (this.data[k] || 0) + 0.25; store.set("time", this.data);
+    },
+    today() { return Math.round(this.data[this.day(Date.now())] || 0); },
+    week() { let s = 0; for (let i = 0; i < 7; i++) s += this.data[this.day(Date.now() - i * 864e5)] || 0; return Math.round(s); }
+  };
+  setInterval(() => playTime.tick(), 15000);
+
+  /* ---------- Voice ---------- */
+  const synth = window.speechSynthesis || null;
+  let voice = null;
+  // Edge lists its old desktop voices (David, Mark, Zira) before the clearer online "Natural" ones,
+  // so rank every English voice instead of taking the first match
+  const voiceScore = v => (/Natural/i.test(v.name) ? 100 : 0) + (/Samantha|Google US English|Google UK English Female/.test(v.name) ? 60 : 0)
+    + (/Aria|Jenny|Ava|Emma|Libby|Sonia|Michelle/.test(v.name) ? 20 : 0) + (/en[-_](US|GB)/i.test(v.lang) ? 5 : 0) + (/Female/i.test(v.name) ? 3 : 0);
+  const byScore = (a, b) => voiceScore(b) - voiceScore(a);
+  function chooseVoice() {
+    if (!synth) return;
+    const vs = synth.getVoices().filter(v => /^en/i.test(v.lang));
+    voice = (settings.voiceName && vs.find(v => v.name === settings.voiceName)) || vs.sort(byScore)[0] || null;
+  }
+  if (synth) { chooseVoice(); synth.onvoiceschanged = chooseVoice; }
+  let speechToken = 0;
+  function stopSpeech() { speechToken++; if (synth) synth.cancel(); }
+  function speakOne(text) {
+    return new Promise(res => {
+      if (!settings.voice || !synth) { setTimeout(res, Math.max(400, text.length * 55)); return; }
+      const u = new SpeechSynthesisUtterance(text);
+      if (voice) { u.voice = voice; u.lang = voice.lang; } else u.lang = "en-US";
+      u.rate = settings.rate; u.pitch = 1; u.volume = 1;
+      let done = false;
+      const finish = () => { if (!done) { done = true; clearTimeout(guard); res(); } };
+      const guard = setTimeout(finish, 2500 + text.length * 120);
+      u.onend = finish; u.onerror = finish;
+      synth.speak(u);
+    });
+  }
+  async function sayQueue(lines) {
+    const tok = speechToken;
+    for (const t of lines) { if (tok !== speechToken) return false; await speakOne(t); }
+    return tok === speechToken;
+  }
+  function say(text) { stopSpeech(); return sayQueue([text]); }
+  const letterSay = L => (L === "A" ? "ay" : L);
+
+  /* ---------- Sound effects ---------- */
+  let actx = null;
+  function tone(f, t, d, type = "triangle", v = 0.14) {
+    v *= synth && synth.speaking ? 0.3 : 0.6; // keep effects quieter than Pip
+    const o = actx.createOscillator(), g = actx.createGain();
+    o.type = type; o.frequency.value = f;
+    g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(v, t + 0.02); g.gain.exponentialRampToValueAtTime(0.0001, t + d);
+    o.connect(g).connect(actx.destination); o.start(t); o.stop(t + d + 0.05);
+  }
+  function sfx(kind) {
+    if (!settings.sfx) return;
+    try {
+      actx = actx || new (window.AudioContext || window.webkitAudioContext)();
+      if (actx.state === "suspended") actx.resume();
+      const now = actx.currentTime;
+      if (kind === "step") tone(420 + rand(80), now, 0.07, "sine", 0.07);
+      else if (kind === "bump") { tone(140, now, 0.12, "square", 0.05); tone(110, now + 0.06, 0.14, "square", 0.05); }
+      else if (kind === "yes") [523, 659, 784].forEach((f, i) => tone(f, now + i * 0.08, 0.18));
+      else if (kind === "no") { tone(330, now, 0.14, "sine", 0.1); tone(262, now + 0.13, 0.2, "sine", 0.1); }
+      else if (kind === "win") [523, 659, 784, 1047, 784, 1047].forEach((f, i) => tone(f, now + i * 0.1, i === 5 ? 0.5 : 0.14));
+    } catch (e) {}
+  }
+  function confetti(el) {
+    if (reduceMotion || !el) return;
+    const r = el.getBoundingClientRect(), cx = r.left + r.width / 2, cy = r.top + r.height / 2;
+    const colors = ["#d8434b", "#ffd45e", "#2f7de1", "#3bb273", "#8e5cd9", "#ff8a2b"];
+    for (let i = 0; i < 26; i++) {
+      const b = document.createElement("span"); b.className = "bit";
+      const a = Math.random() * Math.PI * 2, d = 70 + Math.random() * 130;
+      b.style.left = cx + "px"; b.style.top = cy + "px"; b.style.background = pick(colors);
+      b.style.setProperty("--dx", Math.cos(a) * d + "px"); b.style.setProperty("--dy", Math.sin(a) * d - 40 + "px");
+      document.body.appendChild(b); setTimeout(() => b.remove(), 950);
+    }
+  }
+
+  /* ---------- Content ---------- */
+  const ANIMALS = [
+    { e: "🐰", name: "Bunny", food: "🥕", f: "carrot", fa: "a carrot", fpl: "carrots", species: "rabbit" },
+    { e: "🐶", name: "Puppy", food: "🦴", f: "bone", fa: "a bone", fpl: "bones", species: "dog" },
+    { e: "🐱", name: "Kitten", food: "🐟", f: "fish", fa: "a fish", fpl: "fish", species: "cat" },
+    { e: "🐵", name: "Monkey", food: "🍌", f: "banana", fa: "a banana", fpl: "bananas", species: "monkey" },
+    { e: "🐻", name: "Bear", food: "🍯", f: "honey", fa: "some honey", fpl: "honey", species: "bear" },
+    { e: "🐭", name: "Mouse", food: "🧀", f: "cheese", fa: "some cheese", fpl: "cheese", species: "mouse" }
+  ];
+  const SOUNDS = [
+    ["🐮", "cow", "Moo"], ["🐑", "sheep", "Baa"], ["🐷", "pig", "Oink oink"], ["🦆", "duck", "Quack quack"],
+    ["🐶", "dog", "Woof woof"], ["🐱", "cat", "Meow"], ["🐴", "horse", "Neigh"], ["🐓", "rooster", "Cock a doodle doo"],
+    ["🐸", "frog", "Ribbit"], ["🦁", "lion", "Roar"], ["🦉", "owl", "Hoo hoo"], ["🐝", "bee", "Buzz"], ["🐭", "mouse", "Squeak"]
+  ];
+  const NUM_WORDS = ["zero", "one", "two", "three", "four", "five", "six", "seven"];
+  const STICKERS = [
+    ["🦁", "lion"], ["🐯", "tiger"], ["🐻", "bear"], ["🐼", "panda"], ["🐨", "koala"], ["🐵", "monkey"],
+    ["🦊", "fox"], ["🐰", "bunny"], ["🐸", "frog"], ["🐷", "pig"], ["🐮", "cow"], ["🐔", "hen"],
+    ["🐧", "penguin"], ["🦉", "owl"], ["🦄", "unicorn"], ["🐙", "octopus"], ["🐳", "whale"], ["🐬", "dolphin"],
+    ["🦒", "giraffe"], ["🦓", "zebra"], ["🐘", "elephant"], ["🦛", "hippo"], ["🐢", "turtle"], ["🦜", "parrot"]
+  ];
+  // Field size, trees and how many things to find, per level
+  const LEVELS = {
+    1: { n: 5, trees: 1, count: 3, animals: 2, decoys: 0 },
+    2: { n: 6, trees: 4, count: 4, animals: 3, decoys: 1 },
+    3: { n: 7, trees: 7, count: 5, animals: 4, decoys: 2 }
+  };
+  const DIRS = {
+    ArrowUp: { dx: 0, dy: -1, w: "up" }, ArrowDown: { dx: 0, dy: 1, w: "down" },
+    ArrowLeft: { dx: -1, dy: 0, w: "left" }, ArrowRight: { dx: 1, dy: 0, w: "right" }
+  };
+
+  /* ---------- Screens ---------- */
+  const screens = ["start", "play", "reward", "book"];
+  let current = "start";
+  function show(id) { current = id; screens.forEach(s => $("#" + s).hidden = s !== id); }
+
+  let interacted = false;
+  const gate = $("#gate");
+  function openGate() {
+    gate.hidden = true;
+    window.focus();
+    if (!interacted) {
+      interacted = true;
+      if (current === "start") say(`Hi! I'm Pip. Use the arrows to choose your animal. Then press the big space bar!`);
+    }
+  }
+  gate.addEventListener("click", openGate);
+  window.addEventListener("blur", () => { if ($("#sheetWrap").hidden) { $("#gateText").textContent = "Click here to keep playing!"; gate.hidden = false; } });
+  window.addEventListener("focus", () => { if (interacted) gate.hidden = true; });
+
+  /* ---------- Start screen ---------- */
+  function renderStart() {
+    $("#pickers").innerHTML = ANIMALS.map((a, i) =>
+      `<button class="pick${i === settings.animal ? " sel" : ""}" data-i="${i}" tabindex="-1" aria-label="${a.name}"><span class="emoji">${a.e}</span><span>${a.name}</span></button>`).join("");
+    $("#stickerCount").textContent = Object.keys(stickers).length;
+    gate.querySelector(".emoji").textContent = ANIMALS[settings.animal].e;
+  }
+  function choose(i, speak = true) {
+    settings.animal = (i + ANIMALS.length) % ANIMALS.length; saveSettings();
+    renderStart(); sfx("step");
+    if (speak) say(ANIMALS[settings.animal].name + "!");
+  }
+  $("#pickers").addEventListener("click", e => {
+    const b = e.target.closest(".pick"); if (!b) return;
+    const i = +b.dataset.i;
+    if (i === settings.animal) startRound(); else choose(i);
+  });
+  $("#pipStart").addEventListener("click", () => say("Use the arrows to choose your animal. Then press the big space bar!"));
+  function goStart() { game = null; stopSpeech(); clearIdle(); renderStart(); show("start"); if (interacted) say("Who do you want to be?"); }
+
+  /* ---------- Round ---------- */
+  const ROUND = 5;
+  let game = null;   // whole round
+  let P = null;      // current puzzle
+
+  function renderPaws(el, results) {
+    el.innerHTML = Array.from({ length: ROUND }, (_, i) => {
+      const r = results[i];
+      return `<span class="paw${r ? " got" : ""}${r === "gold" ? " gold" : ""}">${r ? "🐾" : ""}</span>`;
+    }).join("");
+  }
+
+  function startRound() {
+    stopSpeech();
+    const types = TYPES.filter(t => settings.enabled[t]);
+    let order = [];
+    while (order.length < ROUND) order = order.concat(shuffle(types));
+    game = { order: order.slice(0, ROUND), i: 0, results: [], hints: 0, startLevel: level, hero: ANIMALS[settings.animal] };
+    show("play");
+    renderPaws($("#paws"), game.results);
+    say(`Let's go, ${game.hero.name}!`).then(ok => { if (ok !== false && game) nextPuzzle(); });
+  }
+
+  const key = (x, y) => x + "," + y;
+  // Breadth-first search over open squares. Returns {dist: Map, prev: Map}.
+  function flood(from, blocked, n) {
+    const dist = new Map([[key(from.x, from.y), 0]]), prev = new Map(), q = [[from.x, from.y]];
+    while (q.length) {
+      const [x, y] = q.shift();
+      for (const [k, d] of Object.entries(DIRS)) {
+        const nx = x + d.dx, ny = y + d.dy, kk = key(nx, ny);
+        if (nx < 0 || ny < 0 || nx >= n || ny >= n || blocked.has(kk) || dist.has(kk)) continue;
+        dist.set(kk, dist.get(key(x, y)) + 1); prev.set(kk, [x, y, k]); q.push([nx, ny]);
+      }
+    }
+    return { dist, prev };
+  }
+
+  function makePuzzle(type) {
+    const cfg = LEVELS[level], n = cfg.n, hero = game.hero;
+    for (let attempt = 0; attempt < 200; attempt++) {
+      const player = { x: rand(n), y: rand(n) };
+      const trees = new Set();
+      while (trees.size < cfg.trees + (type === "snack" ? 1 : 0)) {
+        const t = { x: rand(n), y: rand(n) };
+        if (Math.abs(t.x - player.x) + Math.abs(t.y - player.y) > 1) trees.add(key(t.x, t.y));
+      }
+      const { dist } = flood(player, trees, n);
+      const spots = shuffle([...dist.entries()].filter(([, d]) => d >= 2).map(([k]) => k.split(",").map(Number)));
+      let items = [];
+      if (type === "snack") {
+        const decoys = shuffle(ANIMALS.filter(a => a !== hero)).slice(0, cfg.decoys);
+        items = [{ pic: hero.food, target: true, label: hero.f }, ...decoys.map(a => ({ pic: a.food, label: a.f, fa: a.fa }))];
+      } else if (type === "numbers") {
+        items = Array.from({ length: cfg.count }, (_, i) => ({ token: String(i + 1), order: i, say: NUM_WORDS[i + 1] }));
+      } else if (type === "letters") {
+        items = Array.from({ length: cfg.count }, (_, i) => { const L = "ABCDEF"[i]; return { token: L, letter: true, order: i, say: letterSay(L) }; });
+      } else {
+        const avail = SOUNDS.filter(s => s[1] !== hero.species);
+        const goalName = memory.pick(avail.map(s => "sound:" + s[1]), 1)[0].slice(6);
+        const goal = avail.find(s => s[1] === goalName);
+        const pool = [goal, ...shuffle(avail.filter(s => s !== goal)).slice(0, cfg.animals - 1)];
+        items = pool.map((s, i) => ({ pic: s[0], label: s[1], sound: s[2], target: i === 0 }));
+      }
+      if (spots.length < items.length) continue;
+      // the first number or letter should not be the farthest thing on the field
+      items.forEach((it, i) => { it.x = spots[i][0]; it.y = spots[i][1]; });
+      return { type, n, player, trees, items, next: 0, hinting: false, bumps: 0, hintsHere: 0, locked: false,
+        goal: type === "sounds" ? items.find(i => i.target) : null };
+    }
+  }
+
+  function currentTarget() {
+    if (!P) return null;
+    if (P.type === "snack") return P.items.find(i => i.target);
+    if (P.type === "sounds") return P.goal;
+    return P.items.find(i => i.order === P.next);
+  }
+
+  function renderBoard() {
+    const b = $("#board");
+    b.style.setProperty("--n", P.n);
+    let html = "";
+    for (let y = 0; y < P.n; y++) for (let x = 0; x < P.n; x++) {
+      const k = key(x, y);
+      html += `<div class="cell${(x + y) % 2 ? " alt" : ""}" data-k="${k}">${P.trees.has(k) ? `<span class="tree">${(x * 7 + y) % 3 ? "🌳" : "🌲"}</span>` : ""}</div>`;
+    }
+    html += `<div class="player" id="player"><span class="hop">${game.hero.e}</span></div>`;
+    b.innerHTML = html;
+    P.items.forEach(it => {
+      const el = document.createElement("div");
+      if (it.token) { el.className = "item token" + (it.letter ? " letter" : ""); el.textContent = it.token; }
+      else { el.className = "item pic"; el.textContent = it.pic; el.style.animationDelay = (-rand(24) / 10) + "s"; }
+      it.el = el;
+      b.querySelector(`[data-k="${key(it.x, it.y)}"]`).appendChild(el);
+    });
+    placePlayer();
+  }
+  function placePlayer() {
+    $("#player").style.transform = `translate(${P.player.x * 100}%, ${P.player.y * 100}%)`;
+  }
+
+  function setPrompt() {
+    const t = P.type, hero = game.hero;
+    let html = "";
+    if (t === "snack") html = `Help ${hero.name} find the ${hero.f}! <span class="goal emoji">${hero.food}</span>`;
+    else if (t === "sounds") html = `Who says “${P.goal.sound}”?`;
+    else if (P.next >= P.items.length) html = "You did it!";
+    else {
+      const all = P.items.map(i => i.token).join(", ");
+      html = `Hop on ${all} in order. Next: <span class="goal">${P.items[P.next].token}</span>`;
+    }
+    $("#prompt").innerHTML = html;
+  }
+
+  function introText() {
+    const hero = game.hero;
+    if (P.type === "snack") return `${hero.name} is hungry! Use the arrows to find the ${hero.f}.`;
+    if (P.type === "sounds") return `Who says ${P.goal.sound}? Hop over to that animal!`;
+    if (P.type === "numbers") return `Hop on the numbers in order. Start with one!`;
+    return `Hop on the letters in order: ${P.items.map(i => i.say).join(", ")}. Start with ${P.items[0].say}!`;
+  }
+  let introPlaying = false;
+  async function intro() {
+    introPlaying = true;
+    const p = P;
+    await say(introText());
+    if (p === P) { introPlaying = false; armIdle(); }
+  }
+
+  function nextPuzzle() {
+    P = makePuzzle(game.order[game.i]);
+    renderBoard(); setPrompt(); clearHint();
+    intro();
+  }
+
+  /* ---------- Moving ---------- */
+  let moving = false, lastBumpTalk = 0;
+  function pressKey(k) {
+    const el = document.querySelector(`.key[data-key="${k}"]`);
+    if (!el) return;
+    el.classList.add("pressed"); setTimeout(() => el.classList.remove("pressed"), 160);
+  }
+  function hopAnim(cls) {
+    const h = document.querySelector("#player .hop"); if (!h) return;
+    h.classList.remove("go", "bonk", "dance"); void h.offsetWidth; h.classList.add(cls);
+  }
+
+  function move(k) {
+    if (!P || P.locked || moving) return;
+    const d = DIRS[k];
+    pressKey(k);
+    armIdle();
+    const nx = P.player.x + d.dx, ny = P.player.y + d.dy;
+    const out = nx < 0 || ny < 0 || nx >= P.n || ny >= P.n;
+    if (out || P.trees.has(key(nx, ny))) {
+      sfx("bump"); hopAnim("bonk");
+      const b = $("#board"); b.classList.remove("bump"); void b.offsetWidth; b.classList.add("bump");
+      P.bumps++;
+      if (P.bumps >= 3 && !P.hinting) showHint(true);
+      else if (Date.now() - lastBumpTalk > 3000 && !introPlaying) { lastBumpTalk = Date.now(); say(out ? "Oops! That's the fence." : "Oops! A tree is in the way."); }
+      return;
+    }
+    P.bumps = 0;
+    $(`[data-k="${key(P.player.x, P.player.y)}"]`).classList.add("trail");
+    P.player = { x: nx, y: ny };
+    (P.used = P.used || new Set()).add(d.w);
+    placePlayer(); hopAnim("go"); sfx("step");
+    moving = true; setTimeout(() => { moving = false; }, 150);
+    const it = P.items.find(i => i.x === nx && i.y === ny && !i.done);
+    if (it) landOn(it);
+    else if (settings.sayDir && !introPlaying) say(cap(d.w) + "!");
+    if (P.hinting && !P.locked) showHint(false);
+  }
+
+  function landOn(it) {
+    const hero = game.hero;
+    if (P.type === "snack") {
+      if (it.target) return won(`Yum yum! ${hero.name} loves ${hero.fpl}!`);
+      nope(it); return say(`Hmm, that's ${it.fa}. ${hero.name} wants the ${hero.f}!`);
+    }
+    if (P.type === "sounds") {
+      if (it.target) { memory.result("sound:" + it.label, !P.missed && P.hintsHere === 0); return won(`${it.sound}! You found the ${it.label}!`); }
+      P.missed = true;
+      nope(it); return say(`${it.sound}! I'm ${article(it.label)}. Who says ${P.goal.sound}?`);
+    }
+    // numbers and letters: must be collected in order
+    if (it.order === P.next) {
+      memory.result((P.type === "numbers" ? "num:" : "abc:") + it.token, !P.missed); P.missed = false;
+      it.done = true; it.el.classList.add("got"); sfx("yes"); confetti(it.el);
+      P.next++;
+      setPrompt();
+      if (P.hinting) clearHint(), P.hinting = false;
+      if (P.next >= P.items.length) {
+        const all = P.items.map(i => P.type === "numbers" ? cap(i.say) : i.say).join(", ");
+        return won(`${all}! You did it!`);
+      }
+      say(cap(it.say) + "!");
+    } else {
+      nope(it); P.missed = true;
+      const kind = P.type === "numbers" ? "" : "the letter ";
+      say(`That's ${kind}${it.say}. Find ${kind}${P.items[P.next].say} first!`);
+    }
+  }
+  function nope(it) { sfx("no"); it.el.classList.remove("nope"); void it.el.offsetWidth; it.el.classList.add("nope"); }
+
+  async function won(text) {
+    const g = game, p = P;
+    p.locked = true; clearHint(); clearIdle();
+    const t = currentTarget();
+    if (t && t.el && p.type !== "numbers" && p.type !== "letters") t.el.classList.add("got");
+    sfx("win"); confetti($("#player")); hopAnim("dance");
+    if (p.hintsHere === 0 && p.used) p.used.forEach(w => memory.result("dir:" + w, true));
+    g.results[g.i] = p.hintsHere === 0 ? "gold" : "plain";
+    renderPaws($("#paws"), g.results);
+    $("#prompt").textContent = "Hooray!";
+    await say(text);
+    if (g !== game) return;
+    await wait(700);
+    if (g !== game) return;
+    g.i++;
+    if (g.i >= ROUND) finishRound(); else nextPuzzle();
+  }
+
+  /* ---------- Hints: light up the arrow that leads toward the goal ---------- */
+  let idleTimer = null;
+  function clearIdle() { clearTimeout(idleTimer); }
+  function armIdle() {
+    clearIdle();
+    idleTimer = setTimeout(() => { if (P && !P.locked && current === "play" && gate.hidden) { showHint(true); armIdle(); } }, 9000);
+  }
+  function clearHint() { document.querySelectorAll(".key.hint").forEach(k => k.classList.remove("hint")); }
+  function firstStep(target) {
+    // prefer a path that steps around the wrong numbers, letters and animals
+    const others = new Set(P.items.filter(i => i !== target && !i.done).map(i => key(i.x, i.y)));
+    for (const blocked of [new Set([...P.trees, ...others]), P.trees]) {
+      const { prev } = flood(P.player, blocked, P.n);
+      let k = key(target.x, target.y);
+      if (!prev.has(k)) continue;
+      let step = prev.get(k);
+      while (step && key(step[0], step[1]) !== key(P.player.x, P.player.y)) { k = key(step[0], step[1]); step = prev.get(k); }
+      return step ? step[2] : null;
+    }
+    return null;
+  }
+  function showHint(speak) {
+    const t = currentTarget(); if (!t) return;
+    const k = firstStep(t); if (!k) return;
+    clearHint();
+    document.querySelector(`.key[data-key="${k}"]`).classList.add("hint");
+    if (speak) {
+      if (!P.hinting) { game.hints++; P.hintsHere++; memory.result("dir:" + DIRS[k].w, false); }
+      P.hinting = true;
+      say(`Try the ${DIRS[k].w} arrow!`);
+    }
+  }
+
+  function finishRound() {
+    const g = game;
+    const before = level;
+    if (g.hints <= 1) level = Math.min(3, level + 1);
+    else if (g.hints >= 5) level = Math.max(1, level - 1);
+    store.set("level", level);
+    const missing = STICKERS.filter(s => !stickers[s[0]]);
+    const s = pick(missing.length ? missing : STICKERS);
+    stickers[s[0]] = (stickers[s[0]] || 0) + 1;
+    store.set("stickers", stickers);
+    renderPaws($("#rewardPaws"), g.results);
+    const el = $("#newSticker");
+    el.textContent = s[0]; el.style.animation = "none"; void el.offsetWidth; el.style.animation = "";
+    $("#rewardText").textContent = `You got ${article(s[1])} sticker!`;
+    show("reward"); sfx("win");
+    const bigger = level > before ? " Next time the farm gets bigger!" : "";
+    say(`Great hopping, ${g.hero.name}! You got ${article(s[1])} sticker!${bigger} Press space to play again.`);
+  }
+
+  /* ---------- Sticker book ---------- */
+  function openBook() {
+    game = null; P = null; stopSpeech(); clearIdle();
+    const have = STICKERS.filter(s => stickers[s[0]]).length;
+    $("#bookCount").textContent = `${have} / ${STICKERS.length}`;
+    $("#bookGrid").innerHTML = STICKERS.map(([e, n]) => {
+      const c = stickers[e] || 0;
+      return `<button class="slotb ${c ? "have" : "empty"}" tabindex="-1" data-name="${n}" data-have="${c ? 1 : 0}" aria-label="${c ? n : "Sticker not found yet"}"><span>${e}</span>${c > 1 ? `<span class="n">×${c}</span>` : ""}</button>`;
+    }).join("");
+    show("book");
+    if (interacted) say(have ? `You have ${have} sticker${have === 1 ? "" : "s"}!` : "Play to win your first sticker!");
+  }
+  $("#bookGrid").addEventListener("click", e => {
+    const b = e.target.closest(".slotb"); if (!b) return;
+    say(b.dataset.have === "1" ? cap(b.dataset.name) + "!" : "Keep playing to find this one!");
+  });
+
+  /* ---------- Buttons ---------- */
+  $("#pad").addEventListener("click", e => { const b = e.target.closest(".key"); if (b) move(b.dataset.key); });
+  $("#homeBtn").addEventListener("click", goStart);
+  $("#repeatBtn").addEventListener("click", () => { if (P && !P.locked) intro(); });
+  $("#pipPlay").addEventListener("click", () => { if (P && !P.locked) intro(); });
+  $("#rewardHome").addEventListener("click", goStart);
+  $("#rewardBook").addEventListener("click", openBook);
+  $("#bookBtn").addEventListener("click", openBook);
+  $("#bookHome").addEventListener("click", goStart);
+
+  /* ---------- Keyboard ---------- */
+  window.addEventListener("keydown", e => {
+    if (!$("#sheetWrap").hidden) { if (e.key === "Escape") closeSheet(); return; }
+    const isArrow = e.key in DIRS, isGo = e.key === " " || e.key === "Enter";
+    if (isArrow || e.key === " ") e.preventDefault(); // stop the page from scrolling
+    if (!gate.hidden) { if (isGo || isArrow) openGate(); return; }
+    if (current === "start") {
+      if (e.key === "ArrowLeft" && !e.repeat) choose(settings.animal - 1);
+      else if (e.key === "ArrowRight" && !e.repeat) choose(settings.animal + 1);
+      else if (isGo) startRound();
+    } else if (current === "play") {
+      if (isArrow && !e.repeat) move(e.key);
+    } else if (current === "reward") {
+      if (isGo) startRound();
+    } else if (current === "book") {
+      if (isGo || e.key === "Escape") goStart();
+    }
+  });
+
+  /* ---------- Grown-ups corner ---------- */
+  const gb = $("#grownBtn");
+  let holdTimer = null;
+  const startHold = () => { gb.classList.add("holding"); holdTimer = setTimeout(() => { endHold(); openSheet(); }, 1500); };
+  const endHold = () => { gb.classList.remove("holding"); clearTimeout(holdTimer); };
+  gb.addEventListener("pointerdown", startHold);
+  ["pointerup", "pointerleave", "pointercancel"].forEach(ev => gb.addEventListener(ev, endHold));
+
+  const PROGRESS = [
+    { label: "Directions", prefix: "dir:", ids: ["up", "down", "left", "right"] },
+    { label: "Animal sounds", prefix: "sound:", ids: SOUNDS.map(s => s[1]) },
+    { label: "Numbers in order", prefix: "num:", ids: ["1", "2", "3", "4", "5"] },
+    { label: "Letters in order", prefix: "abc:", ids: ["A", "B", "C", "D", "E"] }
+  ];
+  function renderProgress() {
+    const chip = (cls, t) => `<span class="chip ${cls}">${t}</span>`;
+    const time = `<p class="prog-time">Played ${playTime.today()} min today, ${playTime.week()} min in the last 7 days.</p>`;
+    let html = "", any = false;
+    for (const g of PROGRESS) {
+      const ids = typeof g.ids === "function" ? g.ids() : g.ids;
+      if (!ids.length) continue;
+      const name = id => String(g.show ? g.show(id) : id).replace(/</g, "&lt;");
+      const seen = ids.map(id => ({ id, r: memory.data[g.prefix + id] })).filter(x => x.r && x.r.seen);
+      if (seen.length) any = true;
+      const work = seen.filter(x => x.r.box <= 1 && x.r.wrong > 0).sort((a, b) => b.r.wrong - a.r.wrong);
+      const good = seen.filter(x => x.r.box >= 3);
+      const mid = seen.length - work.length - good.length, unseen = ids.length - seen.length;
+      html += `<div class="prog-group"><b>${g.label}</b>`
+        + (work.length ? `<div class="chips"><span class="chip-label">Working on</span>${work.map(x => chip("work", name(x.id))).join("")}</div>` : "")
+        + (good.length ? `<div class="chips"><span class="chip-label">Knows well</span>${good.map(x => chip("good", name(x.id))).join("")}</div>` : "")
+        + `<p class="prog-note">${[mid ? `${mid} still practising` : "", unseen ? `${unseen} not met yet` : ""].filter(Boolean).join(" · ")}</p></div>`;
+    }
+    $("#progress").innerHTML = time + (any ? html : "<p>Nothing recorded yet. This fills in as she plays.</p>");
+  }
+  function resetMemRow() {
+    $("#memReset").innerHTML = `<button class="sbtn" id="clearMem">Forget progress and start fresh</button>`;
+    $("#clearMem").addEventListener("click", () => {
+      $("#memReset").innerHTML = `<span>Forget everything she has learned here?</span><button class="sbtn danger" id="yesMem">Yes, start fresh</button><button class="sbtn" id="noMem">Keep it</button>`;
+      $("#yesMem").addEventListener("click", () => { memory.reset(); renderProgress(); $("#memReset").innerHTML = "<span>Progress cleared.</span>"; });
+      $("#noMem").addEventListener("click", resetMemRow);
+    });
+  }
+  function openSheet() {
+    stopSpeech();
+    TYPES.forEach(t => $("#en-" + t).checked = settings.enabled[t]);
+    $("#optVoice").checked = settings.voice; $("#optSfx").checked = settings.sfx; $("#optDir").checked = settings.sayDir;
+    $("#optRate").value = String(settings.rate); fillVoices(); renderProgress(); resetMemRow();
+    $("#levelNow").textContent = `Right now: level ${level} of 3.`;
+    resetStickerRow();
+    $("#sheetWrap").hidden = false; $("#closeSheet").focus({ preventScroll: true }); $(".sheet").scrollTop = 0;
+  }
+  function closeSheet() { $("#sheetWrap").hidden = true; renderStart(); }
+  $("#closeSheet").addEventListener("click", closeSheet);
+  $("#sheetWrap").addEventListener("click", e => { if (e.target.id === "sheetWrap") closeSheet(); });
+  TYPES.forEach(t => $("#en-" + t).addEventListener("change", e => {
+    settings.enabled[t] = e.target.checked;
+    if (!TYPES.some(k => settings.enabled[k])) { settings.enabled[t] = true; e.target.checked = true; } // keep at least one
+    saveSettings();
+  }));
+  $("#optVoice").addEventListener("change", e => { settings.voice = e.target.checked; saveSettings(); });
+  $("#optDir").addEventListener("change", e => { settings.sayDir = e.target.checked; saveSettings(); });
+  $("#optSfx").addEventListener("change", e => { settings.sfx = e.target.checked; saveSettings(); });
+  $("#optRate").addEventListener("change", e => { settings.rate = parseFloat(e.target.value); saveSettings(); say("This is how fast I talk."); });
+  function fillVoices() {
+    const sel = $("#optVoiceName");
+    const vs = synth ? synth.getVoices().filter(v => /^en/i.test(v.lang)).sort(byScore) : [];
+    const q = s => s.replace(/&/g, "&amp;").replace(/"/g, "&quot;").replace(/</g, "&lt;");
+    sel.innerHTML = `<option value="">Best available (automatic)</option>` + vs.map(v => `<option value="${q(v.name)}">${q(v.name)}</option>`).join("");
+    sel.value = settings.voiceName || "";
+  }
+  $("#optVoiceName").addEventListener("change", e => { settings.voiceName = e.target.value; saveSettings(); chooseVoice(); say("Hi! I'm Pip. Can you hear me?"); });
+  $("#testVoice").addEventListener("click", () => say("Hi! I'm Pip. Can you hear me?"));
+  $("#resetLevel").addEventListener("click", () => { level = 1; store.set("level", 1); $("#levelNow").textContent = "Right now: level 1 of 3."; });
+  function resetStickerRow() {
+    $("#stickerReset").innerHTML = `<button class="sbtn danger" id="clearStickers">Clear sticker book</button>`;
+    $("#clearStickers").addEventListener("click", () => {
+      $("#stickerReset").innerHTML = `<span>Remove every sticker?</span><button class="sbtn danger" id="yesClear">Yes, clear them</button><button class="sbtn" id="noClear">Keep them</button>`;
+      $("#yesClear").addEventListener("click", () => { stickers = {}; store.set("stickers", stickers); $("#stickerReset").innerHTML = "<span>Sticker book cleared.</span>"; });
+      $("#noClear").addEventListener("click", resetStickerRow);
+    });
+  }
+
+  renderStart();
+})();
+</script>

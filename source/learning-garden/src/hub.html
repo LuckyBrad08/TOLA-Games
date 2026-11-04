@@ -1,0 +1,236 @@
+<title>Pip's Learning Garden</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Andika:wght@400;700&family=Baloo+2:wght@600;800&display=swap">
+<style>
+/* Layout: Pip's garden gate. Four big doorway cards, one per game, each in that game's own colours;
+   stickers and the one Grown-ups corner sit below. Each game opens full screen over the garden. */
+:root {
+  --sky: #c9ecfa;
+  --sky-low: #e9f8fd;
+  --grass: #86cc72;
+  --grass-deep: #5aa752;
+  --ink: #22304a;
+  --ink-soft: #4d5d78;
+  --paper: #ffffff;
+  --paper-edge: #d3e3ea;
+  --sun: #ffc93d;
+  --berry: #d9466f;
+  --ok: #2c9c5a;
+  --font-display: "Baloo 2", "Arial Rounded MT Bold", "Trebuchet MS", system-ui, sans-serif;
+  --font-read: "Andika", "Century Gothic", "Segoe UI", system-ui, sans-serif;
+  --emoji: "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif;
+  color-scheme: light;
+}
+*, *::before, *::after { box-sizing: border-box; }
+[hidden] { display: none !important; }
+html, body { height: 100%; }
+html, body { overscroll-behavior: none; touch-action: manipulation; -webkit-tap-highlight-color: transparent; -webkit-touch-callout: none; }
+body {
+  margin: 0; font-family: var(--font-read); font-size: 18px; color: var(--ink); overflow: hidden;
+  user-select: none; -webkit-user-select: none;
+  background: linear-gradient(180deg, var(--sky) 0%, var(--sky-low) 64%, var(--grass) 64.1%, var(--grass-deep) 100%);
+}
+button { font: inherit; color: inherit; cursor: pointer; }
+button:focus-visible { outline: 4px solid var(--berry); outline-offset: 4px; }
+.emoji { font-family: var(--emoji); line-height: 1; }
+
+.game-host { position: fixed; inset: 0; z-index: 2; }
+
+#hub { position: relative; z-index: 1; height: 100%; }
+.hub-screen {
+  height: 100%; display: flex; flex-direction: column; align-items: center; gap: 16px;
+  padding-block: 16px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  overflow-y: auto;
+}
+.hub-head { display: flex; align-items: center; gap: 18px; margin-top: 2vh; }
+.pip { font-family: var(--emoji); line-height: 1; border: 0; border-radius: 50%; background: var(--paper); display: grid; place-items: center; box-shadow: 0 6px 0 var(--paper-edge); flex: none; width: 112px; height: 112px; font-size: 72px; transition: transform .15s; }
+.pip:hover { transform: rotate(-6deg) scale(1.05); }
+h1 {
+  font-family: var(--font-display); font-weight: 800; font-size: clamp(38px, 5.4vw, 64px); line-height: .95; margin: 0; color: var(--paper);
+  text-shadow: 0 4px 0 var(--ink), 3px 0 0 var(--ink), -3px 0 0 var(--ink), 0 -3px 0 var(--ink), 3px 4px 0 var(--ink), -3px 4px 0 var(--ink);
+  text-wrap: balance;
+}
+.hub-sub { font-family: var(--font-display); font-weight: 600; font-size: 22px; margin: 6px 0 0; }
+
+.doors { display: grid; grid-template-columns: repeat(4, minmax(0, 236px)); gap: 22px; justify-content: center; width: 100%; margin-top: 2vh; }
+.door {
+  border: 0; border-radius: 34px; padding: 14px 12px 16px; background: var(--paper);
+  box-shadow: 0 10px 0 var(--edge), 0 14px 26px rgba(34, 48, 74, .16);
+  display: flex; flex-direction: column; align-items: center; gap: 8px; transition: transform .15s;
+}
+.door:hover { transform: translateY(-6px) rotate(-1.2deg); }
+.door:active { transform: translateY(5px); }
+.door-art { width: 100%; height: 132px; border-radius: 24px; background: var(--wash); display: grid; place-items: center; font-family: var(--emoji); font-size: 54px; letter-spacing: 4px; }
+.door-name { font-family: var(--font-display); font-weight: 800; font-size: 26px; line-height: 1; }
+.door-skills { font-size: 15px; color: var(--ink-soft); text-align: center; line-height: 1.3; min-height: 2.6em; }
+.d-meadow { --wash: #e4f6dc; --edge: #7cc66b; }
+.d-arrow { --wash: #ffe3e0; --edge: #d8434b; }
+.d-honey { --wash: #fff1c2; --edge: #e9a800; }
+.d-reading { --wash: #dff1fb; --edge: #7fc0e2; }
+
+.hub-foot { margin-top: auto; display: flex; gap: 16px; align-items: center; flex-wrap: wrap; justify-content: center; }
+.pill { border: 0; border-radius: 999px; padding: 12px 22px; background: var(--paper); box-shadow: 0 6px 0 var(--paper-edge);
+  font-family: var(--font-display); font-weight: 800; font-size: 22px; display: inline-flex; align-items: center; gap: 10px; transition: transform .12s; }
+.pill:hover { transform: translateY(-3px); }
+.pill .emoji { font-size: 26px; }
+.badge { background: var(--sun); border-radius: 999px; padding: 0 10px; font-size: 18px; }
+.grownup { touch-action: none; position: relative; overflow: hidden; border: 2px solid rgba(255,255,255,.8); border-radius: 999px; padding: 8px 16px; background: rgba(255,255,255,.25); color: var(--paper); font-size: 15px; font-weight: 700; }
+.grownup .fill { position: absolute; inset: 0; background: rgba(255,255,255,.5); transform: scaleX(0); transform-origin: left; }
+.grownup.holding .fill { transform: scaleX(1); transition: transform 1.5s linear; }
+.grownup span { position: relative; }
+
+/* Sticker book */
+.book-head { display: flex; align-items: center; gap: 16px; width: 100%; max-width: 900px; }
+.book-head h2 { flex: 1; font-family: var(--font-display); font-weight: 800; font-size: clamp(30px, 4vw, 44px); margin: 0; }
+.round-btn { width: 62px; height: 62px; border-radius: 50%; border: 0; background: var(--paper); box-shadow: 0 6px 0 var(--paper-edge); font-family: var(--emoji); font-size: 28px; display: grid; place-items: center; flex: none; }
+.book { width: 100%; max-width: 900px; background: var(--paper); border-radius: 34px; padding: 22px; box-shadow: 0 10px 0 var(--paper-edge);
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(92px, 1fr)); gap: 14px; }
+.slotb { position: relative; aspect-ratio: 1; border: 0; border-radius: 24px; background: #eef5f8; display: grid; place-items: center; font-family: var(--emoji); font-size: 54px; line-height: 1; transition: transform .15s; }
+.slotb.have { background: #fff4d0; }
+.slotb.have:hover { transform: scale(1.08) rotate(-4deg); }
+.slotb.empty span { filter: grayscale(1) brightness(0); opacity: .12; }
+.slotb .n { position: absolute; bottom: 6px; right: 8px; font-family: var(--font-display); font-weight: 800; font-size: 16px; background: var(--sun); border-radius: 999px; padding: 0 8px; }
+
+/* Grown-ups sheet */
+.sheet-wrap { position: fixed; inset: 0; z-index: 9; background: rgba(34,48,74,.45); display: grid; place-items: center; padding: 16px; }
+.sheet { width: 100%; max-width: 640px; max-height: 100%; overflow-y: auto; background: var(--paper); border-radius: 22px; padding: 22px 24px; font-size: 16px; line-height: 1.5; user-select: text; -webkit-user-select: text; }
+.sheet h3 { font-family: var(--font-display); font-size: 26px; margin: 0 0 4px; }
+.sheet h4 { font-size: 13px; letter-spacing: .1em; text-transform: uppercase; color: var(--ink-soft); margin: 22px 0 6px; padding-top: 14px; border-top: 1px solid var(--paper-edge); }
+.sheet h5 { font-family: var(--font-display); font-size: 19px; margin: 14px 0 2px; }
+.sheet label { display: flex; align-items: center; gap: 10px; padding: 3px 0; cursor: pointer; }
+.sheet .field { display: grid; gap: 4px; padding: 4px 0; }
+.sheet .field span { font-weight: 700; }
+.sheet input[type=text], .sheet textarea { font: inherit; padding: 8px 10px; border-radius: 10px; border: 1px solid #c9d7de; width: 100%; }
+.sheet textarea { min-height: 84px; resize: vertical; }
+.sheet input[type=checkbox] { width: 20px; height: 20px; accent-color: var(--ok); flex: none; }
+.sheet select { font: inherit; padding: 4px 8px; border-radius: 8px; border: 1px solid #c9d7de; max-width: 100%; }
+.sheet p { margin: 4px 0; color: var(--ink-soft); }
+.sheet .levels { display: grid; grid-template-columns: auto auto; gap: 0 16px; justify-content: start; font-variant-numeric: tabular-nums; }
+.sbtn { border: 1px solid #c9d7de; background: #f3f7f9; border-radius: 10px; padding: 7px 14px; font-weight: 700; font-size: 15px; }
+.sbtn.danger { color: #b3203f; }
+.sbtn.primary { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+.sheet .row { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin-top: 8px; }
+.sheet-close { position: sticky; bottom: -22px; background: var(--paper); padding: 12px 0 4px; display: flex; justify-content: flex-end; }
+.prog-time { font-weight: 700; color: var(--ink) !important; }
+.prog-game { margin-top: 12px; padding: 10px 14px; border-radius: 14px; background: #f5f9fb; }
+.prog-game > h5 { margin: 0 0 4px; }
+.prog-group { margin: 8px 0; }
+.prog-group > b { display: block; color: var(--ink); }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 4px; align-items: center; }
+.chip-label { font-size: 13px; color: var(--ink-soft); min-width: 86px; }
+.chip { border-radius: 999px; padding: 1px 10px; font-size: 15px; font-weight: 700; font-family: var(--font-read); }
+.chip.work { background: #ffe1c4; color: #8a4500; }
+.chip.good { background: #d3f1dc; color: #1c6a39; }
+.prog-note { font-size: 14px; }
+
+@media (max-width: 1000px) { .doors { grid-template-columns: repeat(2, minmax(0, 236px)); } }
+/* Phone held sideways (the S10e gives about 760 x 360): everything on one screen, big enough for small fingers */
+@media (max-height: 520px) {
+  .hub-screen { gap: 8px; padding-block: 8px; }
+  .hub-head { margin-top: 0; gap: 12px; }
+  .pip { width: 64px; height: 64px; font-size: 42px; box-shadow: 0 4px 0 var(--paper-edge); }
+  h1 { font-size: 34px; }
+  .hub-sub { font-size: 17px; margin-top: 2px; }
+  .doors { grid-template-columns: repeat(4, minmax(0, 180px)); gap: 12px; margin-top: 4px; }
+  .door { padding: 8px 8px 10px; border-radius: 24px; box-shadow: 0 7px 0 var(--edge), 0 10px 18px rgba(34, 48, 74, .14); }
+  .door-art { height: 92px; font-size: 40px; border-radius: 18px; }
+  .door-name { font-size: 19px; }
+  .door-skills { display: none; }
+  .pill { padding: 8px 16px; font-size: 18px; }
+  .round-btn { width: 48px; height: 48px; font-size: 22px; }
+  .book { padding: 14px; gap: 10px; grid-template-columns: repeat(auto-fill, minmax(72px, 1fr)); }
+  .slotb { font-size: 42px; border-radius: 18px; }
+}
+@media (max-width: 520px) { .pip { width: 84px; height: 84px; font-size: 54px; } .doors { gap: 14px; } .door-art { height: 100px; font-size: 40px; } .door-skills { display: none; } }
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } }
+</style>
+
+<div id="hub">
+  <section id="hubHome" class="hub-screen">
+    <div class="hub-head">
+      <button class="pip" id="pipHub" aria-label="Pip the panda says hello">🐼</button>
+      <div>
+        <h1>Pip's Learning Garden</h1>
+        <p class="hub-sub">Which game shall we play?</p>
+      </div>
+    </div>
+    <div class="doors">
+      <button class="door d-meadow" data-game="meadow" aria-label="Animal Meadow">
+        <span class="door-art">🦆🔺🐱</span><span class="door-name">Animal Meadow</span>
+        <span class="door-skills">Counting, letters, shapes, patterns</span>
+      </button>
+      <button class="door d-arrow" data-game="arrow" aria-label="Arrow Farm">
+        <span class="door-art">🐰⬆️🥕</span><span class="door-name">Arrow Farm</span>
+        <span class="door-skills">Arrow keys, directions, animal sounds</span>
+      </button>
+      <button class="door d-honey" data-game="honey" aria-label="Honey Keys">
+        <span class="door-art">🐝⌨️</span><span class="door-name">Honey Keys</span>
+        <span class="door-skills">Finding letters, typing words and her name</span>
+      </button>
+      <button class="door d-reading" data-game="reading" aria-label="Reading Nest">
+        <span class="door-art">📖🐶</span><span class="door-name">Reading Nest</span>
+        <span class="door-skills">First sounds, building and reading words</span>
+      </button>
+    </div>
+    <div class="hub-foot">
+      <button class="pill" id="hubBook"><span class="emoji">⭐</span> Stickers <span class="badge" id="hubStickerCount">0</span></button>
+      <button class="grownup" id="grownBtn" title="Press and hold to open settings and progress"><span class="fill"></span><span>Grown-ups: press and hold</span></button>
+    </div>
+  </section>
+
+  <section id="hubBookScreen" class="hub-screen" hidden>
+    <div class="book-head">
+      <button class="round-btn" id="hubBookBack" aria-label="Back to the garden">🏠</button>
+      <h2>My sticker book</h2>
+      <span class="badge" id="hubBookCount" style="font-size:22px;font-family:var(--font-display);font-weight:800"></span>
+    </div>
+    <div class="book" id="hubBookGrid"></div>
+  </section>
+</div>
+
+<div class="game-host" id="host-meadow" hidden></div>
+<div class="game-host" id="host-arrow" hidden></div>
+<div class="game-host" id="host-honey" hidden></div>
+<div class="game-host" id="host-reading" hidden></div>
+
+<div class="sheet-wrap" id="sheetWrap" hidden>
+  <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="sheetTitle">
+    <h3 id="sheetTitle">Grown-ups corner</h3>
+    <p>Everything here is saved only in this browser on this computer.</p>
+
+    <h4>Progress</h4>
+    <div id="progress"></div>
+    <p>Each game remembers every item she meets. Ones she gets wrong come back more often until she gets them right a few times in a row; ones she knows come back every few days so she keeps them.</p>
+    <div class="row" id="memReset"></div>
+
+    <h4>Her name</h4>
+    <div class="field"><label for="firstName" style="padding:0"><span>First name</span></label><input type="text" id="firstName" autocomplete="off" spellcheck="false"></div>
+    <div class="field"><label for="lastName" style="padding:0"><span>Surname</span></label><input type="text" id="lastName" autocomplete="off" spellcheck="false"></div>
+    <p>Write it with capitals the way it should look. Honey Keys teaches her to type it; Reading Nest asks her to find it among other names.</p>
+    <div class="field"><label for="myWords" style="padding:0"><span>My words: one per line (family, pets, friends)</span></label><textarea id="myWords" spellcheck="false" placeholder="Mom&#10;Dad&#10;Gogo"></textarea></div>
+
+    <h4>Pip's voice</h4>
+    <label><input type="checkbox" id="optVoice"> Pip reads everything aloud</label>
+    <label>Speaking speed <select id="optRate"><option value="0.75">Slower</option><option value="0.9">Normal</option><option value="1.05">Faster</option></select></label>
+    <div class="row"><label for="optVoiceName" style="padding:0">Voice</label><select id="optVoiceName"></select><button type="button" class="sbtn" id="testVoice">Test</button></div>
+    <p>Voices with "Natural" in the name are the clearest. They need an internet connection; without one the app uses the best voice on the laptop.</p>
+    <label><input type="checkbox" id="optSfx"> Sound effects</label>
+
+    <h4>Games</h4>
+    <div id="gameOptions"></div>
+
+    <h4>Difficulty (adjusts by itself)</h4>
+    <p>Each activity moves up a level when she gets most answers right first time, and down when she finds it hard.</p>
+    <div id="levelList"></div>
+    <div class="row"><button class="sbtn" id="resetLevels">Start everything at level 1</button></div>
+
+    <h4>Sticker book</h4>
+    <div class="row" id="stickerReset"></div>
+
+    <div class="sheet-close"><button class="sbtn primary" id="closeSheet">Save and close</button></div>
+  </div>
+</div>
