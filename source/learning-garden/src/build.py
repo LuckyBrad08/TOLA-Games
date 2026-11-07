@@ -352,7 +352,16 @@ app_head = """<!doctype html>
 """
 sw_register = """<script>
 // Works offline once installed: the service worker keeps a copy of every file on the phone
-if ("serviceWorker" in navigator && (location.protocol === "https:" || location.hostname === "localhost")) navigator.serviceWorker.register("sw.js").catch(() => {});
+if ("serviceWorker" in navigator && (location.protocol === "https:" || location.hostname === "localhost")) {
+  // check for a new version every time the app is opened or brought back to the front
+  navigator.serviceWorker.register("sw.js", { updateViaCache: "none" }).then(reg => {
+    document.addEventListener("visibilitychange", () => { if (!document.hidden) reg.update().catch(() => {}); });
+  }).catch(() => {});
+  // when a new version has been installed, reload once to show it (only if a version was already running)
+  const hadController = !!navigator.serviceWorker.controller;
+  let reloaded = false;
+  navigator.serviceWorker.addEventListener("controllerchange", () => { if (hadController && !reloaded) { reloaded = true; location.reload(); } });
+}
 </script>
 """
 open(APP + "index.html", "w").write(app_head + app_page + sw_register + "</html>\n")
